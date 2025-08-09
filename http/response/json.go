@@ -5,24 +5,13 @@ import (
 	"net/http"
 )
 
-func Json[T any](data T, w http.ResponseWriter) {
+func JsonResponseWriter(data *any, w http.ResponseWriter) {
 	res, err := json.Marshal(data)
 	if err != nil {
-		InternalServerError("Could not marshal json matters", w)
+		InternalServerError("Could not marshal json matters").Write(w)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(OkCode)
+	w.WriteHeader(http.StatusOK)
 	w.Write(res)
-}
-
-func JsonOk(w http.ResponseWriter) {
-	JsonMsg(w, "Ok")
-}
-
-func JsonMsg(w http.ResponseWriter, msg string) {
-	Json(HTTPResponse{
-		Code:    OkCode,
-		Message: msg,
-	}, w)
 }

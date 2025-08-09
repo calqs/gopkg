@@ -5,13 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	go_errors "errors"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
 	"time"
-
-	"github.com/monkeydioude/goauth/pkg/errors"
 )
 
 // JWTClaims is a mandatory part of the JWT generation.
@@ -89,11 +87,11 @@ func DecodeJWT[T JWTClaims](token string, method JWTSigningMethod) (T, error) {
 	parts := strings.Split(token, ".")
 	var claims T
 	if len(parts) != 3 {
-		return claims, errors.JWTFormatError(go_errors.New("invalid token format"))
+		return claims, errors.New("invalid token format")
 	}
 	sign := JWTBase64Encode(method.GenerateJWT(fmt.Sprintf("%s.%s", parts[0], parts[1])))
 	if sign != parts[2] {
-		return claims, errors.JWTFormatError(go_errors.New("signatures did not match"))
+		return claims, errors.New("signatures did not match")
 	}
 	claimsb64, err := Decodechunk(parts[1])
 	if err != nil {
