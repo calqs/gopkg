@@ -1,8 +1,8 @@
 package httpserver
 
 import (
-	"github.com/calqs/http/response"
-	"github.com/calqs/http/server"
+	"github.com/calqs/gopkg/httpserver/response"
+	"github.com/calqs/gopkg/httpserver/server"
 )
 
 func NewJSONServer[ConfigT any]() *server.Server[ConfigT] {

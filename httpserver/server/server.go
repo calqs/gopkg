@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/calqs/http/response"
+	"github.com/calqs/gopkg/httpserver/response"
 )
 
 // Layout is the context (in a setting sort of way) of a handler.

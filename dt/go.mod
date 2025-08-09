@@ -1,4 +1,4 @@
-module github.com/calqs/dt
+module github.com/calqs/gopkg/dt
 
 go 1.24.6
 
