@@ -13,3 +13,18 @@ func PtrNilOnEmpty[T any](value T) *T {
 	}
 	return nil
 }
+
+func Deref[T any](ptr *T) T {
+	if ptr == nil {
+		var nope T
+		return nope
+	}
+	return *ptr
+}
+
+func DerefOr[T any](ptr *T, orElse T) T {
+	if ptr == nil {
+		return orElse
+	}
+	return *ptr
+}

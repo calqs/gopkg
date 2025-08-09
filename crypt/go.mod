@@ -1,6 +1,6 @@
 module github.com/calqs/crypt
 
-go 1.24.5
+go 1.24.6
 
 require golang.org/x/crypto v0.41.0
 
@@ -11,7 +11,6 @@ require (
 )
 
 require (
-	github.com/calqs/http v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/sys v0.35.0 // indirect
 )
