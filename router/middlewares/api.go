@@ -6,7 +6,7 @@ type API struct {
 	chain http.Handler
 }
 
-func Mux(handler http.Handler) *API {
+func NewAPIFromMux(handler http.Handler) *API {
 	return &API{handler}
 }
 

@@ -15,4 +15,4 @@ require (
 	golang.org/x/sys v0.35.0 // indirect
 )
 
-replace github.com/calqs/gopkg/httpserver => ../httpserver
+replace github.com/calqs/gopkg/router => ../router

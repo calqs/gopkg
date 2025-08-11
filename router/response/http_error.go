@@ -20,7 +20,7 @@ func (e *HttpError) Error() string {
 func (e *HttpError) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"code": %d, "message": %s}`, e.Code, e.Message)
-	slog.Error("JSON API error", "error", e.Error(), "code", e.Code, "message", e.Message)
+	slog.Error("API error", "error", e.Error(), "code", e.Code, "message", e.Message)
 }
 
 func NewError(code int, msg string, errs ...error) *HttpError {

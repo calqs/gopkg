@@ -1,4 +1,4 @@
-MODULE_DIRS := . ./dt ./httpserver ./crypt
+MODULE_DIRS := . ./dt ./router ./crypt
 GO_TEST_CMD=go test -count=1 -v ./...	
 GO_TIDY_CMD=go mod tidy
 
