@@ -11,16 +11,29 @@ type HttpError struct {
 	Code    int
 	Err     error
 	Message string
+	rw      http.ResponseWriter
 }
 
 func (e *HttpError) Error() string {
 	return e.Err.Error()
 }
 
-func (e *HttpError) Write(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"code": %d, "message": %s}`, e.Code, e.Message)
+func (e *HttpError) Header() http.Header {
+	return e.rw.Header()
+}
+
+func (e *HttpError) Write(d []byte) (int, error) {
+	return e.rw.Write(d)
+}
+
+func (e *HttpError) WriteHeader(code int) {
+	e.rw.WriteHeader(code)
+}
+
+func (e *HttpError) WriteResponse(w http.ResponseWriter) {
 	slog.Error("API error", "error", e.Error(), "code", e.Code, "message", e.Message)
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"code": %d, "message": "%s"}`, e.Code, e.Message)
 }
 
 func NewError(code int, msg string, errs ...error) *HttpError {
@@ -48,4 +61,8 @@ func UnprocessableEntity(msg string, errs ...error) *HttpError {
 
 func InternalServerError(msg string, errs ...error) *HttpError {
 	return NewError(http.StatusInternalServerError, msg, errs...)
+}
+
+func MethodNotAllowed(msg string, errs ...error) *HttpError {
+	return NewError(http.StatusMethodNotAllowed, msg, errs...)
 }

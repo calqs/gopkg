@@ -6,24 +6,9 @@ import (
 	"github.com/calqs/gopkg/router/response"
 )
 
-// Layout is the context (in a setting sort of way) of a handler.
-// It mostly holds dependencies and settings that need to get passed on
-// up the execution tree.
-type baseRouter[ConfigT any] struct {
-	Config         *ConfigT
-	ResponseWriter func(any, http.ResponseWriter)
-}
-
-func (s *baseRouter[ConfigT]) WithConfig(c *ConfigT) *baseRouter[ConfigT] {
-	return &baseRouter[ConfigT]{
-		ResponseWriter: s.ResponseWriter,
-		Config:         c,
-	}
-}
-
 // Handler our basic generic route handler
 // @TODO: remove http.ResponseWriter?
-type Handler[ConfigT any] func(http.ResponseWriter, *http.Request, ...*ConfigT) (any, *response.HttpError)
+type Handler[ConfigT any] func(*http.Request, *ConfigT) response.Response
 
 // // WithMethod is a geeneric wrapper around a generic handler, forcing the a HTTP verb
 // func (l *baseRouter[ConfigT]) WithMethod(method Method, handler Handler[ConfigT]) func(http.ResponseWriter, *http.Request) {

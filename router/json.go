@@ -10,7 +10,7 @@ import (
 func JsonResponseWriter(data any, w http.ResponseWriter) {
 	res, err := json.Marshal(data)
 	if err != nil {
-		response.InternalServerError("Could not marshal json matters").Write(w)
+		response.InternalServerError("Could not marshal json matters").WriteResponse(w)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

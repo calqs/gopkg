@@ -2,32 +2,32 @@ package router
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/calqs/gopkg/router/middlewares"
+	"github.com/calqs/gopkg/router/response"
 )
 
 type Router[ConfigT any] struct {
-	*baseRouter[ConfigT]
-	mux *http.ServeMux
-	api *middlewares.API
+	Config *ConfigT
+	mux    *http.ServeMux
+	api    *middlewares.API
+}
+
+func (swm *Router[ConfigT]) routeIt(w http.ResponseWriter, req *http.Request, mh MethodHandler[ConfigT]) {
+	res := mh.Handler(req, swm.Config)
+	res.Send(w)
 }
 
 func (swm *Router[ConfigT]) HandleFunc(pattern string, mh MethodHandler[ConfigT]) {
 	swm.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == mh.Method.String() {
-			res, err := mh.Handler(w, req, swm.Config)
-			if err != nil {
-				slog.Error("Handler error", "error", err.Error())
-				err.Write(w)
-				return
-			}
-			swm.ResponseWriter(res, w)
-			return
+			swm.routeIt(w, req, mh)
 		}
 		w.WriteHeader(405)
-		fmt.Fprintf(w, "could not find any route matching %s %s", req.Method, pattern)
+		response.
+			MethodNotAllowed(fmt.Sprintf(FormatMethodNotAllowed, req.Method, pattern)).
+			WriteResponse(w)
 	})
 }
 
@@ -37,17 +37,13 @@ func (swm *Router[ConfigT]) HandleFuncs(pattern string, mhs ...MethodHandler[Con
 			if req.Method != mh.Method.String() {
 				continue
 			}
-			res, err := mh.Handler(w, req, swm.Config)
-			if err != nil {
-				slog.Error("Handler error", "error", err.Error())
-				err.Write(w)
-				return
-			}
-			swm.ResponseWriter(res, w)
+			swm.routeIt(w, req, mh)
 			return
 		}
 		w.WriteHeader(405)
-		fmt.Fprintf(w, "could not find any route matching %s %s", req.Method, pattern)
+		response.
+			MethodNotAllowed(fmt.Sprintf(FormatMethodNotAllowed, req.Method, pattern)).
+			WriteResponse(w)
 	})
 }
 
@@ -87,11 +83,8 @@ func (swm *Router[ConfigT]) GetHttpHandler() http.Handler {
 	return swm.api
 }
 
-func NewRouter[ConfigT any](rw func(any, http.ResponseWriter)) *Router[ConfigT] {
+func NewRouter[ConfigT any](config *ConfigT) *Router[ConfigT] {
 	return &Router[ConfigT]{
-		baseRouter: &baseRouter[ConfigT]{
-			ResponseWriter: rw,
-		},
 		mux: http.NewServeMux(),
 	}
 }
