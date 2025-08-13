@@ -6,7 +6,7 @@ func (m Method) String() string {
 	return string(m)
 }
 
-type MethodHandler[ConfigT any] struct {
+type MethodHandler struct {
 	Method  Method
-	Handler Handler[ConfigT]
+	Handler Handler
 }

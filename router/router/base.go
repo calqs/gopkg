@@ -3,50 +3,51 @@ package router
 import (
 	"net/http"
 
+	"github.com/calqs/gopkg/router/request"
 	"github.com/calqs/gopkg/router/response"
 )
 
-// Handler our basic generic route handler
-// @TODO: remove http.ResponseWriter?
-type Handler[ConfigT any] func(*http.Request, *ConfigT) response.Response
+// Handler our basic generic request/response handler
+type Handler func(*http.Request) response.Response
 
-// // WithMethod is a geeneric wrapper around a generic handler, forcing the a HTTP verb
-// func (l *baseRouter[ConfigT]) WithMethod(method Method, handler Handler[ConfigT]) func(http.ResponseWriter, *http.Request) {
-// 	// #StephenCurrying
-// 	return func(w http.ResponseWriter, req *http.Request) {
-// 		// a method matches
-// 		if req.Method == method.String() {
-// 			res, err := handler(w, req, l.Config)
-// 			if err != nil {
-// 				slog.Error("Handler error", "error", err.Error())
-// 			}
-// 			l.ResponseWriter(res, w)
-// 			return
-// 		}
-// 	}
-// }
+// GenHandler is mostly used to wrap a Handler in a generic way.
+// This way, we can have handlers having a concrete struct as return type
+// instead of an interface
+type GenHandler[RequestT any, ResponseT response.Response] func(*RequestT, *http.Request) ResponseT
 
-// HandleGet is a wrapper around a generic handler, forcing the GET HTTP verb
-func HandleGet[ConfigT any](handler Handler[ConfigT]) MethodHandler[ConfigT] {
-	return MethodHandler[ConfigT]{GET, handler}
+func genHandlerToHandler[RequestT any, ResponseT response.Response](
+	handler GenHandler[RequestT, ResponseT],
+) func(r *http.Request) response.Response {
+	return func(r *http.Request) response.Response {
+		res, err := request.ExtractData[RequestT](r)
+		if err != nil {
+			return response.InternalServerError("invalid data type", err)
+		}
+		return handler(res, r)
+	}
 }
 
-// HandlePost is a wrapper around a generic handler, forcing the POST HTTP verb
-func HandlePost[ConfigT any](handler Handler[ConfigT]) MethodHandler[ConfigT] {
-	return MethodHandler[ConfigT]{POST, handler}
+// Get is a wrapper around a generic handler, forcing the GET HTTP verb
+func Get[RequestT any, ResponseT response.Response](handler GenHandler[RequestT, ResponseT]) MethodHandler {
+	return MethodHandler{GET, genHandlerToHandler(handler)}
 }
 
-// HandlePut is a wrapper around a generic handler, forcing the PUT HTTP verb
-func HandlePut[ConfigT any](handler Handler[ConfigT]) MethodHandler[ConfigT] {
-	return MethodHandler[ConfigT]{PUT, handler}
+// Post is a wrapper around a generic handler, forcing the POST HTTP verb
+func Post[RequestT any, ResponseT response.Response](handler GenHandler[RequestT, ResponseT]) MethodHandler {
+	return MethodHandler{POST, genHandlerToHandler(handler)}
 }
 
-// HandlePatch is a wrapper around a generic handler, forcing the PATCH HTTP verb
-func HandlePatch[ConfigT any](handler Handler[ConfigT]) MethodHandler[ConfigT] {
-	return MethodHandler[ConfigT]{PATCH, handler}
+// Put is a wrapper around a generic handler, forcing the PUT HTTP verb
+func Put[RequestT any, ResponseT response.Response](handler GenHandler[RequestT, ResponseT]) MethodHandler {
+	return MethodHandler{PUT, genHandlerToHandler(handler)}
 }
 
-// HandleDelete is a wrapper around a generic handler, forcing the DELETE HTTP verb
-func HandleDelete[ConfigT any](handler Handler[ConfigT]) MethodHandler[ConfigT] {
-	return MethodHandler[ConfigT]{DELETE, handler}
+// Patch is a wrapper around a generic handler, forcing the PATCH HTTP verb
+func Patch[RequestT any, ResponseT response.Response](handler GenHandler[RequestT, ResponseT]) MethodHandler {
+	return MethodHandler{PATCH, genHandlerToHandler(handler)}
+}
+
+// Delete is a wrapper around a generic handler, forcing the DELETE HTTP verb
+func Delete[RequestT any, ResponseT response.Response](handler GenHandler[RequestT, ResponseT]) MethodHandler {
+	return MethodHandler{DELETE, genHandlerToHandler(handler)}
 }

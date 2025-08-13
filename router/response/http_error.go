@@ -18,19 +18,7 @@ func (e *HttpError) Error() string {
 	return e.Err.Error()
 }
 
-func (e *HttpError) Header() http.Header {
-	return e.rw.Header()
-}
-
-func (e *HttpError) Write(d []byte) (int, error) {
-	return e.rw.Write(d)
-}
-
-func (e *HttpError) WriteHeader(code int) {
-	e.rw.WriteHeader(code)
-}
-
-func (e *HttpError) WriteResponse(w http.ResponseWriter) {
+func (e *HttpError) Send(w http.ResponseWriter) {
 	slog.Error("API error", "error", e.Error(), "code", e.Code, "message", e.Message)
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"code": %d, "message": "%s"}`, e.Code, e.Message)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -14,21 +15,21 @@ import (
 )
 
 func TestICanDoRouting(t *testing.T) {
-	type config struct{}
-	router := &Router[config]{
+	router := &Router{
 		mux: http.NewServeMux(),
 	}
+	type fake_req struct{}
 	rw := testutil.NewStringResponse(func(data []byte, rw http.ResponseWriter) {
 		rw.WriteHeader(200)
 		rw.Write(data)
 	})
-	router.HandleFuncs(
+	router.Handle(
 		"/test",
-		HandleGet(func(r *http.Request, ct *config) response.Response {
-			return rw.WithAnyData(`test_get`)
+		Get(func(_ *fake_req, r *http.Request) response.Response {
+			return rw.WithAnyData("test_get")
 		}),
-		HandlePost(func(r *http.Request, ct *config) response.Response {
-			return rw.WithAnyData(`test_post`)
+		Post(func(_ *fake_req, r *http.Request) response.Response {
+			return rw.WithAnyData("test_post")
 		}),
 	)
 	server := httptest.NewServer(router.mux)
@@ -61,9 +62,7 @@ func TestICanDoRouting(t *testing.T) {
 }
 
 func TestAllMethod(t *testing.T) {
-	type config struct {
-		cabane int
-	}
+	type fake_req struct{}
 	type resp struct {
 		Message string `json:"message"`
 	}
@@ -71,25 +70,26 @@ func TestAllMethod(t *testing.T) {
 		rw.WriteHeader(200)
 		rw.Write(data)
 	})
-	router := NewRouter(&config{123})
-	router.HandleFuncs(
+	router := NewRouter()
+	router.Handle(
 		"/test/methods",
-		HandleGet(func(r *http.Request, ct *config) response.Response {
+		Get(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
 			return rw.WithAnyData(&resp{"test_get"})
 		}),
-		HandlePost(func(r *http.Request, ct *config) response.Response {
+		Post(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
 			return rw.WithAnyData(&resp{"test_post"})
 		}),
-		HandlePut(func(r *http.Request, ct *config) response.Response {
+		Put(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
 			return rw.WithAnyData(&resp{"test_put"})
 		}),
-		HandlePatch(func(r *http.Request, ct *config) response.Response {
+		Patch(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
 			return rw.WithAnyData(&resp{"test_patch"})
 		}),
-		HandleDelete(func(r *http.Request, ct *config) response.Response {
+		Delete(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
 			return rw.WithAnyData(&resp{"test_delete"})
 		}),
 	)
+
 	t.Run("get & post & put & patch & delete: get", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/test/methods", nil)
 		rec := httptest.NewRecorder()
@@ -99,6 +99,7 @@ func TestAllMethod(t *testing.T) {
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
 		assert.Equal(t, resp{"test_get"}, res)
 	})
+
 	t.Run("get & post & put & patch & delete: post", func(t *testing.T) {
 		rw = rw.WithResponser(func(b []byte, w http.ResponseWriter) {
 			w.WriteHeader(201)
@@ -112,6 +113,7 @@ func TestAllMethod(t *testing.T) {
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
 		assert.Equal(t, resp{"test_post"}, res)
 	})
+
 	t.Run("get & post & put & patch & delete: put", func(t *testing.T) {
 		rw = rw.WithResponser(func(b []byte, w http.ResponseWriter) {
 			w.WriteHeader(http.StatusAccepted)
@@ -125,6 +127,7 @@ func TestAllMethod(t *testing.T) {
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
 		assert.Equal(t, resp{"test_put"}, res)
 	})
+
 	t.Run("get & post & put & patch & delete: patch", func(t *testing.T) {
 		rw = rw.WithResponser(func(b []byte, w http.ResponseWriter) {
 			w.WriteHeader(http.StatusNotModified)
@@ -138,6 +141,7 @@ func TestAllMethod(t *testing.T) {
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
 		assert.Equal(t, resp{"test_patch"}, res)
 	})
+
 	t.Run("get & post & put & patch & delete: delete", func(t *testing.T) {
 		rw = rw.WithResponser(func(b []byte, w http.ResponseWriter) {
 			w.WriteHeader(http.StatusOK)
@@ -150,5 +154,67 @@ func TestAllMethod(t *testing.T) {
 		res := resp{}
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
 		assert.Equal(t, resp{"test_delete"}, res)
+	})
+}
+
+func TestComplexRoutesWithParams(t *testing.T) {
+	t.Run("get request with query params", func(t *testing.T) {
+		rw := testutil.NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
+			rw.WriteHeader(200)
+			rw.Write(data)
+		})
+		type getReq struct {
+			Cabane string `query:"cabane"`
+		}
+		type resp struct {
+			Message string `json:"message"`
+		}
+		router := NewRouter()
+		router.Handle(
+			"/test/request",
+			Get(func(d *getReq, r *http.Request) *testutil.FuncResponse {
+				return rw.WithAnyData(&resp{d.Cabane})
+			}),
+		)
+		req := httptest.NewRequest(http.MethodGet, "/test/request?cabane=123", nil)
+		rec := httptest.NewRecorder()
+		router.mux.ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		res := resp{}
+		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
+		assert.Equal(t, resp{"123"}, res)
+	})
+
+	t.Run("post request with query params", func(t *testing.T) {
+		rw := testutil.NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
+			rw.WriteHeader(http.StatusCreated)
+			rw.Write(data)
+		})
+		type request struct {
+			Cabane string `query:"cabane"`
+			Dog    string
+			Amount int
+		}
+		type resp struct {
+			Cabane int    `json:"cabane"`
+			Dog    string `json:"dog"`
+			Amount int    `json:"amount"`
+		}
+		router := NewRouter()
+		router.Handle(
+			"/test/request",
+			Post(func(d *request, r *http.Request) *testutil.FuncResponse {
+				cbn, err := strconv.Atoi(d.Cabane)
+				assert.NoError(t, err)
+				return rw.WithAnyData(&resp{cbn, d.Dog, d.Amount})
+			}),
+		)
+		req := httptest.NewRequest(http.MethodPost, "/test/request?cabane=123", strings.NewReader(`{"dog": "suzie", "amount": 1}`))
+		rec := httptest.NewRecorder()
+		router.mux.ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusCreated, rec.Code)
+		res := resp{}
+		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
+		assert.Equal(t, resp{123, "suzie", 1}, res)
 	})
 }
