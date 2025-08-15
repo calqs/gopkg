@@ -9,8 +9,8 @@ import (
 )
 
 type Router struct {
-	mux *http.ServeMux
-	api *middlewares.API
+	mux         *http.ServeMux
+	middlewares *middlewares.APIMiddlewares
 }
 
 func (swm *Router) routeIt(w http.ResponseWriter, req *http.Request, mh MethodHandler) {
@@ -35,14 +35,14 @@ func (swm *Router) Handle(pattern string, mhs ...MethodHandler) {
 }
 
 func (swm *Router) Use(handlers ...func(http.Handler) http.Handler) {
-	if swm.api == nil {
-		swm.api = middlewares.NewAPIFromMux(swm.mux)
+	if swm.middlewares == nil {
+		swm.middlewares = middlewares.NewAPIMiddlewaresFromMux(swm.mux)
 	}
-	swm.api.Use(handlers...)
+	swm.middlewares.Use(handlers...)
 }
 
 func (swm *Router) GetHttpHandler() http.Handler {
-	return swm.api
+	return swm.middlewares
 }
 
 func NewRouter() *Router {

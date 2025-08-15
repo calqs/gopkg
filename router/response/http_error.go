@@ -11,7 +11,6 @@ type HttpError struct {
 	Code    int
 	Err     error
 	Message string
-	rw      http.ResponseWriter
 }
 
 func (e *HttpError) Error() string {

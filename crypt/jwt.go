@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 )
@@ -36,7 +36,7 @@ func (c JWTDefaultClaims) RemainingRefresh(timeRef time.Time) time.Duration {
 func (c JWTDefaultClaims) GetRawClaims() []byte {
 	claims, err := json.Marshal(c)
 	if err != nil {
-		log.Printf("[ERR ] getClaims: %s\n", err.Error())
+		slog.Error("getClaims", "error", err.Error())
 		return []byte("{}")
 	}
 	return claims

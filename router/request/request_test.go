@@ -12,10 +12,11 @@ func TestICanExtractQueryStringFromRequest(t *testing.T) {
 	t.Run("simple query with simple struct", func(t *testing.T) {
 		type Cabane123 struct {
 			Cabane int `query:"cabane"`
+			NoTag  string
 		}
-		req1 := httptest.NewRequest(http.MethodGet, "/test?cabane=123", nil)
+		req1 := httptest.NewRequest(http.MethodGet, "/test?cabane=123&notag=ok", nil)
 		res, err := ExtractData[Cabane123](req1)
 		assert.NoError(t, err)
-		assert.Equal(t, Cabane123{Cabane: 123}, *res)
+		assert.Equal(t, Cabane123{Cabane: 123, NoTag: "ok"}, *res)
 	})
 }

@@ -28,3 +28,14 @@ func Argon2KeyHashBytes(
 		argon2params.KeyLen,
 	)
 }
+
+// Argon2 basic conf
+// This config is a sort of default argon2 config, recommended by RFC draft
+func GetBasicArgon2Conf() Argon2Bag {
+	return Argon2Bag{
+		Time:    3,
+		Mem:     32 * 1024,
+		Threads: 4,
+		KeyLen:  32,
+	}
+}

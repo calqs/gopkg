@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/calqs/gopkg/router/response"
-	"github.com/calqs/gopkg/router/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +18,7 @@ func TestICanDoRouting(t *testing.T) {
 		mux: http.NewServeMux(),
 	}
 	type fake_req struct{}
-	rw := testutil.NewStringResponse(func(data []byte, rw http.ResponseWriter) {
+	rw := NewStringResponse(func(data []byte, rw http.ResponseWriter) {
 		rw.WriteHeader(200)
 		rw.Write(data)
 	})
@@ -66,26 +65,26 @@ func TestAllMethod(t *testing.T) {
 	type resp struct {
 		Message string `json:"message"`
 	}
-	rw := testutil.NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
+	rw := NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
 		rw.WriteHeader(200)
 		rw.Write(data)
 	})
 	router := NewRouter()
 	router.Handle(
 		"/test/methods",
-		Get(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
+		Get(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_get"})
 		}),
-		Post(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
+		Post(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_post"})
 		}),
-		Put(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
+		Put(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_put"})
 		}),
-		Patch(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
+		Patch(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_patch"})
 		}),
-		Delete(func(d *fake_req, r *http.Request) *testutil.FuncResponse {
+		Delete(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_delete"})
 		}),
 	)
@@ -159,7 +158,7 @@ func TestAllMethod(t *testing.T) {
 
 func TestComplexRoutesWithParams(t *testing.T) {
 	t.Run("get request with query params", func(t *testing.T) {
-		rw := testutil.NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
+		rw := NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
 			rw.WriteHeader(200)
 			rw.Write(data)
 		})
@@ -172,7 +171,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		router := NewRouter()
 		router.Handle(
 			"/test/request",
-			Get(func(d *getReq, r *http.Request) *testutil.FuncResponse {
+			Get(func(d *getReq, r *http.Request) *FuncResponse {
 				return rw.WithAnyData(&resp{d.Cabane})
 			}),
 		)
@@ -186,7 +185,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 	})
 
 	t.Run("post request with query params", func(t *testing.T) {
-		rw := testutil.NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
+		rw := NewJsonResponse(func(data []byte, rw http.ResponseWriter) {
 			rw.WriteHeader(http.StatusCreated)
 			rw.Write(data)
 		})
@@ -203,7 +202,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		router := NewRouter()
 		router.Handle(
 			"/test/request",
-			Post(func(d *request, r *http.Request) *testutil.FuncResponse {
+			Post(func(d *request, r *http.Request) *FuncResponse {
 				cbn, err := strconv.Atoi(d.Cabane)
 				assert.NoError(t, err)
 				return rw.WithAnyData(&resp{cbn, d.Dog, d.Amount})

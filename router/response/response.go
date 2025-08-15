@@ -15,3 +15,11 @@ func (hr *HTTPResponse) Send(w http.ResponseWriter) {
 	w.WriteHeader(hr.statusCode)
 	w.Write(hr.data)
 }
+
+func StatusOk[TransformerT Transformer](data []byte) *HTTPResponse {
+	var transformer TransformerT
+	return &HTTPResponse{
+		data:       transformer.Transform(data),
+		statusCode: http.StatusOK,
+	}
+}

@@ -1,21 +1,24 @@
 package middlewares
 
-import "net/http"
+import (
+	"net/http"
+)
 
-type API struct {
+type APIMiddlewares struct {
 	chain http.Handler
 }
 
-func NewAPIFromMux(handler http.Handler) *API {
-	return &API{handler}
+func NewAPIMiddlewaresFromMux(handler http.Handler) *APIMiddlewares {
+	return &APIMiddlewares{handler}
 }
 
-func (a *API) Use(handlers ...func(http.Handler) http.Handler) {
-	for _, handler := range handlers {
-		a.chain = handler(a.chain)
+func (a *APIMiddlewares) Use(handlers ...func(http.Handler) http.Handler) {
+	for i := range len(handlers) {
+		a.chain = handlers[len(handlers)-1-i](a.chain)
 	}
 }
-func (a *API) UseBefore(handlers ...func(http.ResponseWriter, *http.Request)) {
+
+func (a *APIMiddlewares) UseBefore(handlers ...func(http.ResponseWriter, *http.Request)) {
 	for _, handler := range handlers {
 		a.Use(func(h http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +28,7 @@ func (a *API) UseBefore(handlers ...func(http.ResponseWriter, *http.Request)) {
 		})
 	}
 }
-func (a *API) UseAfter(handlers ...func(http.ResponseWriter, *http.Request)) {
+func (a *APIMiddlewares) UseAfter(handlers ...func(http.ResponseWriter, *http.Request)) {
 	for _, handler := range handlers {
 		a.Use(func(h http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -36,6 +39,6 @@ func (a *API) UseAfter(handlers ...func(http.ResponseWriter, *http.Request)) {
 	}
 }
 
-func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (a *APIMiddlewares) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.chain.ServeHTTP(w, r)
 }

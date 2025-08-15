@@ -2,14 +2,14 @@ package request
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"net/http"
 )
 
 func JsonBodyRequest[T any](req *http.Request) (*T, error) {
 	if req == nil {
-		return nil, errors.New("nil *http.Request")
+		return nil, fmt.Errorf("%w: http.Request", ErrNilPointer)
 	}
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
