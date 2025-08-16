@@ -54,11 +54,9 @@ type JWTSigningMethod interface {
 	Name() string
 }
 
-type Secret string
-
 // HS256 is the type for the [Hashmac SHA256](https://en.wikipedia.org/wiki/HMAC) JWT signing method.
 // It holds the secret used for the signing, and implements JWTSigningMethod
-type HS256 Secret
+type HS256 string
 
 // GenerateJWT implementation of the JWTSigningMethod interface for HS256
 func (secret HS256) GenerateJWT(data string) []byte {

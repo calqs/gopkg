@@ -4,6 +4,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+// Argon2Bag is a tuple like value bag for Argon2
 type Argon2Bag struct {
 	Time    uint32
 	Mem     uint32
