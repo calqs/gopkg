@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"strings"
 	"testing"
@@ -13,11 +14,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type fake_req struct{}
+
+func (fake_req) BindQueryString(_ url.Values) error { return nil }
 func TestICanDoRouting(t *testing.T) {
 	router := &Router{
 		mux: http.NewServeMux(),
 	}
-	type fake_req struct{}
+
 	rw := NewStringResponse(func(data []byte, rw http.ResponseWriter) {
 		rw.WriteHeader(200)
 		rw.Write(data)
@@ -54,14 +58,13 @@ func TestICanDoRouting(t *testing.T) {
 		rec3 := httptest.NewRecorder()
 		router.mux.ServeHTTP(rec3, req3)
 		assert.Equal(t, http.StatusMethodNotAllowed, rec3.Code)
-		httpErr := response.HttpError{}
+		httpErr := response.HTTPError{}
 		assert.NoError(t, json.Unmarshal(rec3.Body.Bytes(), &httpErr))
 		assert.Equal(t, fmt.Sprintf(FormatMethodNotAllowed, DELETE.String(), "/test"), httpErr.Message)
 	})
 }
 
 func TestAllMethod(t *testing.T) {
-	type fake_req struct{}
 	type resp struct {
 		Message string `json:"message"`
 	}
@@ -163,6 +166,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 			rw.Write(data)
 		})
 		type getReq struct {
+			fake_req
 			Cabane string `query:"cabane"`
 		}
 		type resp struct {
@@ -190,6 +194,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 			rw.Write(data)
 		})
 		type request struct {
+			fake_req
 			Cabane string `query:"cabane"`
 			Dog    string
 			Amount int

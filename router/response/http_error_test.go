@@ -9,17 +9,17 @@ import (
 	"testing"
 )
 
-func TestHttpError_Error(t *testing.T) {
+func TestHTTPError_Error(t *testing.T) {
 	err := errors.New("something went wrong")
-	httpErr := &HttpError{Err: err}
+	httpErr := &HTTPError{Err: err}
 	if got := httpErr.Error(); got != "something went wrong" {
 		t.Errorf("Error() = %q, want %q", got, err.Error())
 	}
 }
 
-func TestHttpError_Send(t *testing.T) {
+func TestHTTPError_Send(t *testing.T) {
 	rr := httptest.NewRecorder()
-	httpErr := &HttpError{
+	httpErr := &HTTPError{
 		Code:    http.StatusBadRequest,
 		Message: "bad input",
 		Err:     errors.New("bad input"),
@@ -73,7 +73,7 @@ func TestNewError_WithCustomError(t *testing.T) {
 func TestHelpers(t *testing.T) {
 	tests := []struct {
 		name    string
-		fn      func(string, ...error) *HttpError
+		fn      func(string, ...error) *HTTPError
 		code    int
 		message string
 		custom  error

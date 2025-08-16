@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// JsonBodyRequest safely turns a http.Request.Body data into a struct
 func JsonBodyRequest[T any](req *http.Request) (*T, error) {
 	if req == nil {
 		return nil, fmt.Errorf("%w: http.Request", ErrNilPointer)

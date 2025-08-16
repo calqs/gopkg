@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// bindValues tries to find "query" tag in the passed pointer to generic type
+// and tries to assign a querystring parameter matching that tag
 func bindValues[T any](dst *T, vals url.Values) error {
 	v := reflect.ValueOf(dst).Elem()
 	t := v.Type()
@@ -35,6 +37,8 @@ func bindValues[T any](dst *T, vals url.Values) error {
 	return nil
 }
 
+// ExtractData will retrieve and transform data from the request's querystring and body.
+// @todo: make querystring retrieval explici
 func ExtractData[DataT any](r *http.Request) (*DataT, error) {
 	res, err := JsonBodyRequest[DataT](r)
 	if err != nil {

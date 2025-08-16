@@ -7,50 +7,31 @@ import (
 	"net/http"
 )
 
-type HttpError struct {
+// HTTPError implements Response interface, for errors only
+type HTTPError struct {
 	Code    int
 	Err     error
 	Message string
 }
 
-func (e *HttpError) Error() string {
+func (e *HTTPError) Error() string {
 	return e.Err.Error()
 }
 
-func (e *HttpError) Send(w http.ResponseWriter) {
+func (e *HTTPError) Send(w http.ResponseWriter) {
 	slog.Error("API error", "error", e.Error(), "code", e.Code, "message", e.Message)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(e.Code)
 	fmt.Fprintf(w, `{"code": %d, "message": "%s"}`, e.Code, e.Message)
 }
 
-func NewError(code int, msg string, errs ...error) *HttpError {
+func NewError(code int, msg string, errs ...error) *HTTPError {
 	if len(errs) == 0 {
 		errs = []error{errors.New(msg)}
 	}
-	return &HttpError{
+	return &HTTPError{
 		Code:    code,
 		Message: msg,
 		Err:     errs[0],
 	}
-}
-
-func BadRequest(msg string, errs ...error) *HttpError {
-	return NewError(http.StatusBadRequest, msg, errs...)
-}
-
-func Unauthorized(msg string, errs ...error) *HttpError {
-	return NewError(http.StatusUnauthorized, msg, errs...)
-}
-
-func UnprocessableEntity(msg string, errs ...error) *HttpError {
-	return NewError(http.StatusUnprocessableEntity, msg, errs...)
-}
-
-func InternalServerError(msg string, errs ...error) *HttpError {
-	return NewError(http.StatusInternalServerError, msg, errs...)
-}
-
-func MethodNotAllowed(msg string, errs ...error) *HttpError {
-	return NewError(http.StatusMethodNotAllowed, msg, errs...)
 }

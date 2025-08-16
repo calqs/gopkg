@@ -6,20 +6,24 @@ type Response interface {
 	Send(http.ResponseWriter)
 }
 
+// HTTPResponse is a standard HTTP response, meant for 2xx, for example
 type HTTPResponse struct {
-	data       []byte
-	statusCode int
+	Data       []byte
+	StatusCode int
 }
 
 func (hr *HTTPResponse) Send(w http.ResponseWriter) {
-	w.WriteHeader(hr.statusCode)
-	w.Write(hr.data)
+	w.WriteHeader(hr.StatusCode)
+	w.Write(hr.Data)
 }
 
-func StatusOk[TransformerT Transformer](data []byte) *HTTPResponse {
-	var transformer TransformerT
-	return &HTTPResponse{
-		data:       transformer.Transform(data),
-		statusCode: http.StatusOK,
-	}
+// RedirectResponse is a "Location" header driven HTTP response, meant for 3xx
+type RedirectResponse struct {
+	location   string
+	StatusCode int
+}
+
+func (rr *RedirectResponse) Send(w http.ResponseWriter) {
+	w.Header().Set("Location", rr.location)
+	w.WriteHeader(rr.StatusCode)
 }
