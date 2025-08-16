@@ -13,13 +13,32 @@ type Router struct {
 	middlewares *middlewares.APIMiddlewares
 }
 
+func areReqResOk(w http.ResponseWriter, req *http.Request) bool {
+	if w == nil {
+		panic(ErrNilRequestOrResponse.Error())
+	}
+	if req == nil {
+		response.
+			InternalServerError(ErrNilRequestOrResponse.Error(), fmt.Errorf("routeIt: *http.Request or http.ResponseWriter: %w", ErrNilRequestOrResponse)).
+			Send(w)
+		return false
+	}
+	return true
+}
+
 func (swm *Router) routeIt(w http.ResponseWriter, req *http.Request, mh MethodHandler) {
+	if !areReqResOk(w, req) {
+		return
+	}
 	res := mh.Handler(req)
 	res.Send(w)
 }
 
 func (swm *Router) Handle(pattern string, mhs ...MethodHandler) {
 	swm.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
+		if !areReqResOk(w, req) {
+			return
+		}
 		for _, mh := range mhs {
 			if req.Method != mh.Method.String() {
 				continue
@@ -27,7 +46,6 @@ func (swm *Router) Handle(pattern string, mhs ...MethodHandler) {
 			swm.routeIt(w, req, mh)
 			return
 		}
-		w.WriteHeader(405)
 		response.
 			MethodNotAllowed(fmt.Sprintf(FormatMethodNotAllowed, req.Method, pattern)).
 			Send(w)

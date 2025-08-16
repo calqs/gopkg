@@ -1,4 +1,4 @@
-package slice
+package dt
 
 import (
 	"errors"
@@ -7,16 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestICanMapVarsToSliceElements(t *testing.T) {
-	t.Run("test 1", func(t *testing.T) {
-		trial := []string{"salut", "les", "kids"}
-		var salut, les, kids string
+func Test_I_Can_Append_Variable_Values_Into_A_Slice(t *testing.T) {
+	trial := []string{"salut", "les", "kids"}
+	var salut, les, kids string
 
-		MapVars(trial, &salut, &les, &kids)
-		assert.Equal(t, trial[0], salut)
-		assert.Equal(t, trial[1], les)
-		assert.Equal(t, trial[2], kids)
-	})
+	AppendValues(trial, &salut, &les, &kids)
+	assert.Equal(t, trial[0], salut)
+	assert.Equal(t, trial[1], les)
+	assert.Equal(t, trial[2], kids)
 }
 
 func TestMatchAllFunc_Ints(t *testing.T) {
@@ -49,9 +47,7 @@ func TestMatchAll(t *testing.T) {
 
 	t.Run("empty slice is true", func(t *testing.T) {
 		var ss []string
-		if !MatchAll(ss, "anything") {
-			t.Fatalf("expected true for empty slice, got false")
-		}
+		assert.True(t, MatchAll(ss, "anything"))
 	})
 }
 
@@ -67,7 +63,7 @@ func TestAnyFunc_Found_FirstMatch(t *testing.T) {
 		{ID: 3, Name: "Cid"},
 	}
 
-	got, err := AnyFunc(users, func(u user) bool { return u.ID == 2 })
+	got, err := MatchAnyFunc(users, func(u user) bool { return u.ID == 2 })
 	assert.NoError(t, err)
 	assert.Equal(t, got.Name, "Bob")
 }
@@ -77,14 +73,14 @@ func TestAnyFunc_NotFound_ReturnsZeroAndError(t *testing.T) {
 	type rec struct{ X int }
 	recs := []rec{{1}, {2}, {3}}
 
-	got, err := AnyFunc(recs, func(r rec) bool { return r.X == 42 })
+	got, err := MatchAnyFunc(recs, func(r rec) bool { return r.X == 42 })
 	assert.ErrorIs(t, err, ErrAnyCouldNotFind)
 	assert.Equal(t, got, (rec{}))
 }
 
 func TestAny_Found(t *testing.T) {
 	ints := []int{10, 20, 30}
-	got, err := Any(ints, 20)
+	got, err := MatchAny(ints, 20)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -95,7 +91,7 @@ func TestAny_Found(t *testing.T) {
 
 func TestAny_NotFound(t *testing.T) {
 	ints := []int{1, 2, 3}
-	got, err := Any(ints, 99)
+	got, err := MatchAny(ints, 99)
 	if !errors.Is(err, ErrAnyCouldNotFind) {
 		t.Fatalf("expected ErrAnyCouldNotFind, got %v", err)
 	}
@@ -111,7 +107,7 @@ func TestAnyFunc_WithNonComparableElementType(t *testing.T) {
 		{"b": 2},
 		{"c": 3},
 	}
-	got, err := AnyFunc(s, func(m map[string]int) bool {
+	got, err := MatchAnyFunc(s, func(m map[string]int) bool {
 		_, ok := m["b"]
 		return ok
 	})

@@ -20,6 +20,7 @@ func (e *HttpError) Error() string {
 func (e *HttpError) Send(w http.ResponseWriter) {
 	slog.Error("API error", "error", e.Error(), "code", e.Code, "message", e.Message)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(e.Code)
 	fmt.Fprintf(w, `{"code": %d, "message": "%s"}`, e.Code, e.Message)
 }
 

@@ -1,4 +1,4 @@
-package ptr
+package dt
 
 import (
 	"testing"
