@@ -7,3 +7,5 @@ replace github.com/calqs/gopkg/router => ./router
 replace github.com/calqs/gopkg/crypt => ./crypt
 
 replace github.com/calqs/gopkg/dt => ./dt
+
+replace github.com/calqs/gopkg/env => ./env

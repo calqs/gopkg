@@ -72,7 +72,7 @@ func TestAllMethod(t *testing.T) {
 		rw.WriteHeader(200)
 		rw.Write(data)
 	})
-	router := NewRouter()
+	router := NewRouter(t.Context())
 	router.Handle(
 		"/test/methods",
 		Get(func(d *fake_req, r *http.Request) *FuncResponse {
@@ -172,7 +172,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		type resp struct {
 			Message string `json:"message"`
 		}
-		router := NewRouter()
+		router := NewRouter(t.Context())
 		router.Handle(
 			"/test/request",
 			Get(func(d *getReq, r *http.Request) *FuncResponse {
@@ -204,7 +204,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 			Dog    string `json:"dog"`
 			Amount int    `json:"amount"`
 		}
-		router := NewRouter()
+		router := NewRouter(t.Context())
 		router.Handle(
 			"/test/request",
 			Post(func(d *request, r *http.Request) *FuncResponse {

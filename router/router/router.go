@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 type Router struct {
 	mux         *http.ServeMux
 	middlewares *middlewares.APIMiddlewares
+	ctx         context.Context
 }
 
 func areReqResOk(w http.ResponseWriter, req *http.Request) bool {
@@ -63,8 +65,13 @@ func (swm *Router) GetHttpHandler() http.Handler {
 	return swm.middlewares
 }
 
-func NewRouter() *Router {
+func (swm *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	swm.mux.ServeHTTP(w, r)
+}
+
+func NewRouter(ctx context.Context) *Router {
 	return &Router{
 		mux: http.NewServeMux(),
+		ctx: ctx,
 	}
 }
