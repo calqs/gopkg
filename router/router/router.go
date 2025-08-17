@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/calqs/gopkg/router/handler"
 	"github.com/calqs/gopkg/router/middlewares"
 	"github.com/calqs/gopkg/router/response"
 )
@@ -28,7 +29,7 @@ func areReqResOk(w http.ResponseWriter, req *http.Request) bool {
 	return true
 }
 
-func (swm *Router) routeIt(w http.ResponseWriter, req *http.Request, mh MethodHandler) {
+func (swm *Router) routeIt(w http.ResponseWriter, req *http.Request, mh handler.MethodHandler) {
 	if !areReqResOk(w, req) {
 		return
 	}
@@ -36,7 +37,7 @@ func (swm *Router) routeIt(w http.ResponseWriter, req *http.Request, mh MethodHa
 	res.Send(w)
 }
 
-func (swm *Router) Handle(pattern string, mhs ...MethodHandler) {
+func (swm *Router) Handle(pattern string, mhs ...handler.MethodHandler) {
 	swm.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
 		if !areReqResOk(w, req) {
 			return

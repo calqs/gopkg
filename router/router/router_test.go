@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/calqs/gopkg/router/public"
 	"github.com/calqs/gopkg/router/response"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,10 +29,10 @@ func TestICanDoRouting(t *testing.T) {
 	})
 	router.Handle(
 		"/test",
-		Get(func(_ *fake_req, r *http.Request) response.Response {
+		public.Get(func(_ *fake_req, r *http.Request) response.Response {
 			return rw.WithAnyData("test_get")
 		}),
-		Post(func(_ *fake_req, r *http.Request) response.Response {
+		public.Post(func(_ *fake_req, r *http.Request) response.Response {
 			return rw.WithAnyData("test_post")
 		}),
 	)
@@ -60,7 +61,7 @@ func TestICanDoRouting(t *testing.T) {
 		assert.Equal(t, http.StatusMethodNotAllowed, rec3.Code)
 		httpErr := response.HTTPError{}
 		assert.NoError(t, json.Unmarshal(rec3.Body.Bytes(), &httpErr))
-		assert.Equal(t, fmt.Sprintf(FormatMethodNotAllowed, DELETE.String(), "/test"), httpErr.Message)
+		assert.Equal(t, fmt.Sprintf(FormatMethodNotAllowed, http.MethodDelete, "/test"), httpErr.Message)
 	})
 }
 
@@ -75,19 +76,19 @@ func TestAllMethod(t *testing.T) {
 	router := NewRouter(t.Context())
 	router.Handle(
 		"/test/methods",
-		Get(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Get(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_get"})
 		}),
-		Post(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Post(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_post"})
 		}),
-		Put(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Put(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_put"})
 		}),
-		Patch(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Patch(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_patch"})
 		}),
-		Delete(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Delete(func(d *fake_req, r *http.Request) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_delete"})
 		}),
 	)
@@ -175,7 +176,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		router := NewRouter(t.Context())
 		router.Handle(
 			"/test/request",
-			Get(func(d *getReq, r *http.Request) *FuncResponse {
+			public.Get(func(d *getReq, r *http.Request) *FuncResponse {
 				return rw.WithAnyData(&resp{d.Cabane})
 			}),
 		)
@@ -207,7 +208,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		router := NewRouter(t.Context())
 		router.Handle(
 			"/test/request",
-			Post(func(d *request, r *http.Request) *FuncResponse {
+			public.Post(func(d *request, r *http.Request) *FuncResponse {
 				cbn, err := strconv.Atoi(d.Cabane)
 				assert.NoError(t, err)
 				return rw.WithAnyData(&resp{cbn, d.Dog, d.Amount})
