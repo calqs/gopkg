@@ -55,9 +55,6 @@ func (swm *Router) Handle(pattern string, mhs ...MethodHandler) {
 }
 
 func (swm *Router) Use(handlers ...func(http.Handler) http.Handler) {
-	if swm.middlewares == nil {
-		swm.middlewares = middlewares.NewAPIMiddlewaresFromMux(swm.mux)
-	}
 	swm.middlewares.Use(handlers...)
 }
 
@@ -66,12 +63,14 @@ func (swm *Router) GetHttpHandler() http.Handler {
 }
 
 func (swm *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	swm.mux.ServeHTTP(w, r)
+	swm.middlewares.ServeHTTP(w, r)
 }
 
 func NewRouter(ctx context.Context) *Router {
+	mux := http.NewServeMux()
 	return &Router{
-		mux: http.NewServeMux(),
-		ctx: ctx,
+		mux:         mux,
+		ctx:         ctx,
+		middlewares: middlewares.NewAPIMiddlewaresFromMux(mux),
 	}
 }

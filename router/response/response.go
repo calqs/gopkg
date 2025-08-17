@@ -1,6 +1,8 @@
 package response
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Response interface {
 	Send(http.ResponseWriter)
