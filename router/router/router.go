@@ -14,6 +14,7 @@ type Router struct {
 	mux         *http.ServeMux
 	middlewares *middlewares.APIMiddlewares
 	ctx         context.Context
+	options     Options
 }
 
 func areReqResOk(w http.ResponseWriter, req *http.Request) bool {
@@ -38,6 +39,8 @@ func (swm *Router) routeIt(w http.ResponseWriter, req *http.Request, mh handler.
 }
 
 func (swm *Router) Handle(pattern string, mhs ...handler.MethodHandler) {
+	// have to clean path, at least for security reasons
+	pattern = CleanPath(swm.options.BaseURL + CleanPath(pattern))
 	swm.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
 		if !areReqResOk(w, req) {
 			return
@@ -67,11 +70,19 @@ func (swm *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	swm.middlewares.ServeHTTP(w, r)
 }
 
-func NewRouter(ctx context.Context) *Router {
+func NewRouter(ctx context.Context, opts ...OptionFunc) *Router {
 	mux := http.NewServeMux()
+	serverOpts := Options{}
+	for _, opt := range opts {
+		if opt == nil {
+			continue
+		}
+		opt(&serverOpts)
+	}
 	return &Router{
 		mux:         mux,
 		ctx:         ctx,
 		middlewares: middlewares.NewAPIMiddlewaresFromMux(mux),
+		options:     serverOpts,
 	}
 }

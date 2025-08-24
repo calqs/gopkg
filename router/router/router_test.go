@@ -36,11 +36,12 @@ func TestICanDoRouting(t *testing.T) {
 			return rw.WithAnyData("test_post")
 		}),
 	)
-	server := httptest.NewServer(router.mux)
-	t.Cleanup(func() {
-		server.Close()
-	})
+
 	t.Run("post & get routes: test post should be OK", func(t *testing.T) {
+		server := httptest.NewServer(router.mux)
+		t.Cleanup(func() {
+			server.Close()
+		})
 		req1 := httptest.NewRequest(http.MethodPost, "/test", nil)
 		rec1 := httptest.NewRecorder()
 		router.mux.ServeHTTP(rec1, req1)
@@ -62,6 +63,20 @@ func TestICanDoRouting(t *testing.T) {
 		httpErr := response.HTTPError{}
 		assert.NoError(t, json.Unmarshal(rec3.Body.Bytes(), &httpErr))
 		assert.Equal(t, fmt.Sprintf(FormatMethodNotAllowed, http.MethodDelete, "/test"), httpErr.Message)
+	})
+	t.Run("with options: base path", func(t *testing.T) {
+		nrt := NewRouter(t.Context(), WithBaseURL("/cabane"))
+		nrt.Handle(
+			"/123",
+			public.Get(func(_ *fake_req, r *http.Request) response.Response {
+				return rw.WithAnyData("test_get")
+			}),
+		)
+		req := httptest.NewRequest(http.MethodGet, "/cabane/123", nil)
+		rec := httptest.NewRecorder()
+		nrt.mux.ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, "test_get", strings.TrimSpace(rec.Body.String()))
 	})
 }
 
