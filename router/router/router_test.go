@@ -69,14 +69,29 @@ func TestICanDoRouting(t *testing.T) {
 		nrt.Handle(
 			"/123",
 			public.Get(func(_ *fake_req, r *http.Request) response.Response {
-				return rw.WithAnyData("test_get")
+				return rw.WithAnyData("test_get_123")
 			}),
 		)
-		req := httptest.NewRequest(http.MethodGet, "/cabane/123", nil)
-		rec := httptest.NewRecorder()
-		nrt.mux.ServeHTTP(rec, req)
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "test_get", strings.TrimSpace(rec.Body.String()))
+		nrt.Handle(
+			"/",
+			public.Get(func(_ *fake_req, r *http.Request) response.Response {
+				return rw.WithAnyData("test_get_slash")
+			}),
+		)
+		{
+			req := httptest.NewRequest(http.MethodGet, "/cabane/123", nil)
+			rec := httptest.NewRecorder()
+			nrt.mux.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "test_get_123", strings.TrimSpace(rec.Body.String()))
+		}
+		{
+			req := httptest.NewRequest(http.MethodGet, "/cabane", nil)
+			rec := httptest.NewRecorder()
+			nrt.mux.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "test_get_slash", strings.TrimSpace(rec.Body.String()))
+		}
 	})
 }
 

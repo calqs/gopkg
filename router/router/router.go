@@ -49,6 +49,9 @@ func (swm *Router) Handle(pattern string, mhs ...handler.MethodHandler) {
 			if req.Method != mh.Method.String() {
 				continue
 			}
+			if pattern != req.RequestURI {
+				continue
+			}
 			swm.routeIt(w, req, mh)
 			return
 		}
