@@ -6,16 +6,24 @@ import (
 	"github.com/calqs/gopkg/router/response"
 )
 
-func Answer(data any, code int) *response.HTTPResponse {
+type JSONResponse response.HTTPResponse
+
+func (hr *JSONResponse) Send(w http.ResponseWriter) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(hr.StatusCode)
+	w.Write(hr.Data)
+}
+
+func Answer(data any, code int) *JSONResponse {
 	res, err := response.JsonTransformer{}.Transform(data)
 	if err != nil {
 		errRes := response.InternalServerError("could not transform result", err)
-		return &response.HTTPResponse{
+		return &JSONResponse{
 			Data:       []byte(errRes.Message),
 			StatusCode: errRes.Code,
 		}
 	}
-	return &response.HTTPResponse{
+	return &JSONResponse{
 		Data:       res,
 		StatusCode: code,
 	}
@@ -23,48 +31,48 @@ func Answer(data any, code int) *response.HTTPResponse {
 
 // 2xx – Success Responses
 
-func StatusOk(data any) *response.HTTPResponse {
+func StatusOk(data any) *JSONResponse {
 	return Answer(data, http.StatusOK)
 }
 
-func StatusCreated(data any) *response.HTTPResponse {
+func StatusCreated(data any) *JSONResponse {
 	return Answer(data, http.StatusCreated)
 }
 
-func StatusAccepted(data any) *response.HTTPResponse {
+func StatusAccepted(data any) *JSONResponse {
 	return Answer(data, http.StatusAccepted)
 }
 
-func StatusNonAuthoritativeInfo(data any) *response.HTTPResponse {
+func StatusNonAuthoritativeInfo(data any) *JSONResponse {
 	return Answer(data, http.StatusNonAuthoritativeInfo)
 }
 
-func StatusNoContent() *response.HTTPResponse {
-	return &response.HTTPResponse{
+func StatusNoContent() *JSONResponse {
+	return &JSONResponse{
 		Data:       nil,
 		StatusCode: http.StatusNoContent,
 	}
 }
 
-func StatusResetContent() *response.HTTPResponse {
-	return &response.HTTPResponse{
+func StatusResetContent() *JSONResponse {
+	return &JSONResponse{
 		Data:       nil,
 		StatusCode: http.StatusResetContent,
 	}
 }
 
-func StatusPartialContent(data any) *response.HTTPResponse {
+func StatusPartialContent(data any) *JSONResponse {
 	return Answer(data, http.StatusPartialContent)
 }
 
-func StatusMultiStatus(data any) *response.HTTPResponse {
+func StatusMultiStatus(data any) *JSONResponse {
 	return Answer(data, http.StatusMultiStatus)
 }
 
-func StatusAlreadyReported(data any) *response.HTTPResponse {
+func StatusAlreadyReported(data any) *JSONResponse {
 	return Answer(data, http.StatusAlreadyReported)
 }
 
-func StatusIMUsed(data any) *response.HTTPResponse {
+func StatusIMUsed(data any) *JSONResponse {
 	return Answer(data, http.StatusIMUsed)
 }

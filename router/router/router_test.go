@@ -46,14 +46,14 @@ func TestICanDoRouting(t *testing.T) {
 		rec1 := httptest.NewRecorder()
 		router.mux.ServeHTTP(rec1, req1)
 		assert.Equal(t, http.StatusOK, rec1.Code)
-		assert.Equal(t, strings.TrimSpace(rec1.Body.String()), "test_post")
+		assert.Equal(t, "test_post", strings.TrimSpace(rec1.Body.String()))
 	})
 	t.Run("post & get routes: test get should be OK", func(t *testing.T) {
 		req2 := httptest.NewRequest(http.MethodGet, "/test", nil)
 		rec2 := httptest.NewRecorder()
 		router.mux.ServeHTTP(rec2, req2)
 		assert.Equal(t, http.StatusOK, rec2.Code)
-		assert.Equal(t, strings.TrimSpace(rec2.Body.String()), "test_get")
+		assert.Equal(t, "test_get", strings.TrimSpace(rec2.Body.String()))
 	})
 	t.Run("post & get routes: test delete should be 405", func(t *testing.T) {
 		req3 := httptest.NewRequest(http.MethodDelete, "/test", nil)
@@ -251,5 +251,95 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		res := resp{}
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
 		assert.Equal(t, resp{123, "suzie", 1}, res)
+	})
+}
+
+func Test_I_Can_Route_Groups(t *testing.T) {
+	fakeMiddleware := func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			req.Header.Add("japan", "ikitai")
+			h.ServeHTTP(w, req)
+		})
+	}
+	br := NewRouter(t.Context(), WithBaseURL("/test"))
+	rw := NewStringResponse(func(data []byte, rw http.ResponseWriter) {
+		rw.WriteHeader(200)
+		rw.Write(data)
+	})
+	br.Handle(
+		"/",
+		public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
+			assert.Empty(t, r.Header.Get("japan"))
+			return rw.WithAnyData("test_get")
+		}),
+	)
+	t.Run("very simple get test", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		rec := httptest.NewRecorder()
+		br.ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, "test_get", rec.Body.String())
+	})
+	t.Run("with nested group", func(t *testing.T) {
+		gr := br.Group("/cabane")
+		gr.Handle(
+			"/",
+			public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
+				if r.Header.Get("japan") != "" {
+					t.Fail()
+				}
+				return rw.WithAnyData("test_nested_cabane")
+			}),
+		)
+		{
+			req := httptest.NewRequest(http.MethodGet, "/test/cabane", nil)
+			rec := httptest.NewRecorder()
+			gr.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "test_nested_cabane", rec.Body.String())
+		}
+		gr.Handle(
+			"/123",
+			public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
+				return rw.WithAnyData("test_nested_cabane_123")
+			}),
+		)
+		{
+			req := httptest.NewRequest(http.MethodGet, "/test/cabane/123", nil)
+			rec := httptest.NewRecorder()
+			gr.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "test_nested_cabane_123", rec.Body.String())
+		}
+		{
+			// check base route is still good
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			rec := httptest.NewRecorder()
+			br.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "test_get", rec.Body.String())
+		}
+	})
+	t.Run("with nested group and middleware", func(t *testing.T) {
+		{
+			gr := br.Group("/future")
+			gr.Use(fakeMiddleware)
+			gr.Handle("/", public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
+				return rw.WithAnyData(r.Header.Get("japan"))
+			}))
+			req := httptest.NewRequest(http.MethodGet, "/test/future", nil)
+			rec := httptest.NewRecorder()
+			gr.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "ikitai", rec.Body.String())
+		}
+		{
+			// check base route is still good
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			rec := httptest.NewRecorder()
+			br.ServeHTTP(rec, req)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "test_get", rec.Body.String())
+		}
 	})
 }

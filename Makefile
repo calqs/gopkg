@@ -24,7 +24,7 @@ coverage_all:
 		(cd $$dir && ${GO_HTML_COVERAGE}); \
 	done
 
-test_coverage_all: test_all html_coverage_all
+test_coverage_all: test_all coverage_all
 
 update_go_version_all:
 	./_scripts/update-go-mods.sh
