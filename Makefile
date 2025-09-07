@@ -1,4 +1,4 @@
-MODULE_DIRS := . ./dt ./router ./crypt ./env
+MODULE_DIRS := . ./dt ./router ./crypt ./env ./gormslog
 GO_TEST_CMD=go test -count=1 -coverprofile=coverage.out ./...	
 GO_TIDY_CMD=go mod tidy
 GO_HTML_COVERAGE=go tool cover -html=coverage.out
