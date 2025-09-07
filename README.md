@@ -4,5 +4,6 @@
 - [crypt: argon2, jwt creation/verification and password hashing functionalities](./crypt/README.md)
 - [router: multiplexer/handler with middleware, with an opinion about
   json/gRPC](./router/README.md)
+- [gormslog: use of the slog pkg as gorm logger](./gormslog/README.md)
 
 [![Go](https://github.com/calqs/gopkg/actions/workflows/go.yml/badge.svg)](https://github.com/calqs/gopkg/actions/workflows/go.yml)

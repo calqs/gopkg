@@ -1,0 +1,1 @@
+Use of "slog" std package as GORM logger

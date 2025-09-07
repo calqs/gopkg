@@ -9,3 +9,5 @@ replace github.com/calqs/gopkg/crypt => ./crypt
 replace github.com/calqs/gopkg/dt => ./dt
 
 replace github.com/calqs/gopkg/env => ./env
+
+replace github.com/calqs/gopkg/gormslog => ./gormslog
