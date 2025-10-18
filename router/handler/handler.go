@@ -9,6 +9,12 @@ import (
 
 // Handler our basic generic request/response handler
 type Handler func(*http.Request) response.Response
+type (
+	None     = struct{}
+	NoParams = None
+	N        = None
+	Void     = None
+)
 
 type Request[ParamsT any] struct {
 	Request *http.Request
