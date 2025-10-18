@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/calqs/gopkg/router/handler"
 	"github.com/calqs/gopkg/router/public"
 	"github.com/calqs/gopkg/router/response"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,6 @@ import (
 
 type fake_req struct{}
 
-func (fake_req) BindQueryString(_ url.Values) error { return nil }
 func TestICanDoRouting(t *testing.T) {
 	router := &Router{
 		mux: http.NewServeMux(),
@@ -29,10 +28,10 @@ func TestICanDoRouting(t *testing.T) {
 	})
 	router.Handle(
 		"/test",
-		public.Get(func(_ *fake_req, r *http.Request) response.Response {
+		public.Get(func(p *handler.Request[fake_req]) response.Response {
 			return rw.WithAnyData("test_get")
 		}),
-		public.Post(func(_ *fake_req, r *http.Request) response.Response {
+		public.Post(func(p *handler.Request[fake_req]) response.Response {
 			return rw.WithAnyData("test_post")
 		}),
 	)
@@ -68,13 +67,13 @@ func TestICanDoRouting(t *testing.T) {
 		nrt := NewRouter(t.Context(), WithBaseURL("/cabane"))
 		nrt.Handle(
 			"/123",
-			public.Get(func(_ *fake_req, r *http.Request) response.Response {
+			public.Get(func(p *handler.Request[fake_req]) response.Response {
 				return rw.WithAnyData("test_get_123")
 			}),
 		)
 		nrt.Handle(
 			"/",
-			public.Get(func(_ *fake_req, r *http.Request) response.Response {
+			public.Get(func(p *handler.Request[fake_req]) response.Response {
 				return rw.WithAnyData("test_get_slash")
 			}),
 		)
@@ -106,19 +105,19 @@ func TestAllMethod(t *testing.T) {
 	router := NewRouter(t.Context())
 	router.Handle(
 		"/test/methods",
-		public.Get(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Get(func(p *handler.Request[fake_req]) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_get"})
 		}),
-		public.Post(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Post(func(p *handler.Request[fake_req]) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_post"})
 		}),
-		public.Put(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Put(func(p *handler.Request[fake_req]) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_put"})
 		}),
-		public.Patch(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Patch(func(p *handler.Request[fake_req]) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_patch"})
 		}),
-		public.Delete(func(d *fake_req, r *http.Request) *FuncResponse {
+		public.Delete(func(p *handler.Request[fake_req]) *FuncResponse {
 			return rw.WithAnyData(&resp{"test_delete"})
 		}),
 	)
@@ -197,7 +196,6 @@ func TestComplexRoutesWithParams(t *testing.T) {
 			rw.Write(data)
 		})
 		type getReq struct {
-			fake_req
 			Cabane string `query:"cabane"`
 		}
 		type resp struct {
@@ -206,8 +204,8 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		router := NewRouter(t.Context())
 		router.Handle(
 			"/test/request",
-			public.Get(func(d *getReq, r *http.Request) *FuncResponse {
-				return rw.WithAnyData(&resp{d.Cabane})
+			public.Get(func(p *handler.Request[getReq]) *FuncResponse {
+				return rw.WithAnyData(&resp{p.Params.Cabane})
 			}),
 		)
 		req := httptest.NewRequest(http.MethodGet, "/test/request?cabane=123", nil)
@@ -225,7 +223,6 @@ func TestComplexRoutesWithParams(t *testing.T) {
 			rw.Write(data)
 		})
 		type request struct {
-			fake_req
 			Cabane string `query:"cabane"`
 			Dog    string
 			Amount int
@@ -238,10 +235,10 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		router := NewRouter(t.Context())
 		router.Handle(
 			"/test/request",
-			public.Post(func(d *request, r *http.Request) *FuncResponse {
-				cbn, err := strconv.Atoi(d.Cabane)
+			public.Post(func(p *handler.Request[request]) *FuncResponse {
+				cbn, err := strconv.Atoi(p.Params.Cabane)
 				assert.NoError(t, err)
-				return rw.WithAnyData(&resp{cbn, d.Dog, d.Amount})
+				return rw.WithAnyData(&resp{cbn, p.Params.Dog, p.Params.Amount})
 			}),
 		)
 		req := httptest.NewRequest(http.MethodPost, "/test/request?cabane=123", strings.NewReader(`{"dog": "suzie", "amount": 1}`))
@@ -268,8 +265,8 @@ func Test_I_Can_Route_Groups(t *testing.T) {
 	})
 	br.Handle(
 		"/",
-		public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
-			assert.Empty(t, r.Header.Get("japan"))
+		public.Get(func(p *handler.Request[fake_req]) *FuncResponse {
+			assert.Empty(t, p.Request.Header.Get("japan"))
 			return rw.WithAnyData("test_get")
 		}),
 	)
@@ -284,8 +281,8 @@ func Test_I_Can_Route_Groups(t *testing.T) {
 		gr := br.Group("/cabane")
 		gr.Handle(
 			"/",
-			public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
-				if r.Header.Get("japan") != "" {
+			public.Get(func(p *handler.Request[fake_req]) *FuncResponse {
+				if p.Request.Header.Get("japan") != "" {
 					t.Fail()
 				}
 				return rw.WithAnyData("test_nested_cabane")
@@ -300,7 +297,7 @@ func Test_I_Can_Route_Groups(t *testing.T) {
 		}
 		gr.Handle(
 			"/123",
-			public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
+			public.Get(func(p *handler.Request[fake_req]) *FuncResponse {
 				return rw.WithAnyData("test_nested_cabane_123")
 			}),
 		)
@@ -324,8 +321,8 @@ func Test_I_Can_Route_Groups(t *testing.T) {
 		{
 			gr := br.Group("/future")
 			gr.Use(fakeMiddleware)
-			gr.Handle("/", public.Get(func(_ *fake_req, r *http.Request) *FuncResponse {
-				return rw.WithAnyData(r.Header.Get("japan"))
+			gr.Handle("/", public.Get(func(p *handler.Request[fake_req]) *FuncResponse {
+				return rw.WithAnyData(p.Request.Header.Get("japan"))
 			}))
 			req := httptest.NewRequest(http.MethodGet, "/test/future", nil)
 			rec := httptest.NewRecorder()

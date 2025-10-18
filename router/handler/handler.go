@@ -10,10 +10,15 @@ import (
 // Handler our basic generic request/response handler
 type Handler func(*http.Request) response.Response
 
+type Request[ParamsT any] struct {
+	Request *http.Request
+	Params  *ParamsT
+}
+
 // GenHandler is mostly used to wrap a Handler in a generic way.
 // This way, we can have handlers having a concrete struct as return type
 // instead of an interface
-type GenHandler[RequestT any, ResponseT response.Response] func(*RequestT, *http.Request) ResponseT
+type GenHandler[RequestT any, ResponseT response.Response] func(*Request[RequestT]) ResponseT
 
 type Method string
 
@@ -34,6 +39,9 @@ func GenHandlerToHandler[RequestT any, ResponseT response.Response](
 		if err != nil {
 			return response.InternalServerError("invalid data type", err)
 		}
-		return handler(res, r)
+		return handler(&Request[RequestT]{
+			Request: r,
+			Params:  res,
+		})
 	}
 }
