@@ -43,7 +43,7 @@ func TestICanDoRouting(t *testing.T) {
 		})
 		req1 := httptest.NewRequest(http.MethodPost, "/test", nil)
 		rec1 := httptest.NewRecorder()
-		router.mux.ServeHTTP(rec1, req1)
+		router.ServeHTTP(rec1, req1)
 		assert.Equal(t, http.StatusOK, rec1.Code)
 		assert.Equal(t, "test_post", strings.TrimSpace(rec1.Body.String()))
 	})

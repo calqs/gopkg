@@ -12,6 +12,8 @@ tidy_all:
 test_coverage:
 	cd $$dir && ${GO_TEST_CMD} && ${GO_HTML_COVERAGE}
 
+test: test_all
+
 test_all:
 	@for dir in $(MODULE_DIRS); do \
 		echo "Testing $$dir"; \
