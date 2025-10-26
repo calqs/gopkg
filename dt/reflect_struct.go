@@ -44,6 +44,10 @@ func assignValue(i int, val string, v reflect.Value) {
 		if n, err := strconv.Atoi(val); err == nil {
 			fv.SetInt(int64(n))
 		}
+	case reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Uint:
+		if n, err := strconv.ParseUint(val, 0, 64); err == nil {
+			fv.SetUint(uint64(n))
+		}
 		// @TODO: add more types
 	}
 }
