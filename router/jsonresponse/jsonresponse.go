@@ -9,6 +9,7 @@ import (
 type JSONResponse response.HTTPResponse
 
 func (hr *JSONResponse) Send(w http.ResponseWriter) {
+	hr.WriteHeaders(w)
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(hr.StatusCode)
 	w.Write(hr.Data)

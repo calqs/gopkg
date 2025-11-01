@@ -14,9 +14,11 @@ func TestHTTPResponse_Send(t *testing.T) {
 		Data:       []byte("hello"),
 		StatusCode: http.StatusCreated,
 	}
+	resp.SetHeader("cabane", "123")
 	resp.Send(rec)
 	assert.Equal(t, http.StatusCreated, rec.Code, "status code should match")
 	assert.Equal(t, "hello", rec.Body.String(), "body should match")
+	assert.Equal(t, "123", rec.Header().Get("cabane"), "status code should match")
 }
 
 type testTransformer struct{}

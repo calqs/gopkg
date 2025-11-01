@@ -121,6 +121,7 @@ func TestStatusAlreadyReported(t *testing.T) {
 func TestStatusIMUsed(t *testing.T) {
 	rr := httptest.NewRecorder()
 	resp := StatusIMUsed("im-used")
+	resp.SetHeader("cabane", "123")
 	resp.Send(rr)
 
 	assert.Equal(t, http.StatusIMUsed, rr.Code)
@@ -129,4 +130,5 @@ func TestStatusIMUsed(t *testing.T) {
 	err := json.Unmarshal(rr.Body.Bytes(), &out)
 	assert.NoError(t, err)
 	assert.Equal(t, "im-used", out)
+	assert.Equal(t, "123", rr.Header().Get("cabane"))
 }

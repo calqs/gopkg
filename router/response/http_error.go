@@ -9,6 +9,7 @@ import (
 
 // HTTPError implements Response interface, for errors only
 type HTTPError struct {
+	ResponseHeaders
 	Code    int
 	Err     error
 	Message string
@@ -19,6 +20,7 @@ func (e *HTTPError) Error() string {
 }
 
 func (e *HTTPError) Send(w http.ResponseWriter) {
+	e.WriteHeaders(w)
 	slog.Error("API error", "error", e.Error(), "code", e.Code, "message", e.Message)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(e.Code)
