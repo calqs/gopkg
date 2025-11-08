@@ -17,6 +17,12 @@ func (rh *ResponseHeaders) SetHeader(key, value string) {
 	rh.Headers = append(rh.Headers, [2]string{key, value})
 }
 
+func (rh *ResponseHeaders) SetCookie(cookie http.Cookie) {
+	if v := cookie.String(); v != "" {
+		rh.SetHeader("Set-Cookie", cookie.String())
+	}
+}
+
 func (rh *ResponseHeaders) WriteHeaders(w http.ResponseWriter) {
 	for _, header := range rh.Headers {
 		w.Header().Set(header[0], header[1])
