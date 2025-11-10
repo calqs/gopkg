@@ -48,3 +48,11 @@ func MatchAnyFunc[ItemT any](slice []ItemT, match func(ItemT) bool) (ItemT, erro
 func MatchAny[ItemT comparable](slice []ItemT, value ItemT) (ItemT, error) {
 	return MatchAnyFunc(slice, func(it ItemT) bool { return it == value })
 }
+
+func SliceTransform[FromT, ToT any](from []FromT, transformer func(FromT) ToT) []ToT {
+	res := make([]ToT, len(from))
+	for k, val := range from {
+		res[k] = transformer(val)
+	}
+	return res
+}

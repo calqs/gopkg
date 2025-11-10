@@ -2,6 +2,7 @@ package dt
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -117,4 +118,9 @@ func TestAnyFunc_WithNonComparableElementType(t *testing.T) {
 	if _, ok := got["b"]; !ok {
 		t.Fatalf("expected map containing key 'b', got %#v", got)
 	}
+}
+
+func Test_I_Can_Transform_A_Slice(t *testing.T) {
+	assert.Equal(t, []string{"1", "2", "3"}, SliceTransform([]int{1, 2, 3}, func(v int) string { return strconv.Itoa(v) }))
+	assert.Equal(t, []string{}, SliceTransform([]int{}, func(v int) string { return strconv.Itoa(v) }))
 }
