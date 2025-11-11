@@ -16,6 +16,8 @@ type Router struct {
 	ctx         context.Context
 	options     Options
 	tree        []*Router
+	handlers    map[string][]http.Handler
+	served      bool
 }
 
 func NewRouter(ctx context.Context, opts ...OptionFunc) *Router {
@@ -33,6 +35,8 @@ func NewRouter(ctx context.Context, opts ...OptionFunc) *Router {
 		middlewares: middlewares.NewAPIMiddlewaresFromMux(),
 		options:     serverOpts,
 		tree:        make([]*Router, 0),
+		handlers:    make(map[string][]http.Handler, 0),
+		served:      false,
 	}
 }
 
@@ -44,6 +48,7 @@ func (swm *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
 	swm.mux.ServeHTTP(w, r)
 }
 
@@ -63,25 +68,10 @@ func areReqResOk(w http.ResponseWriter, req *http.Request) bool {
 func (swm *Router) Handle(pattern string, mhs ...http.Handler) {
 	// have to clean path, at least for security reasons
 	pattern = CleanPath(swm.options.BaseURL + CleanPath(pattern))
-	swm.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
-		prw := &proxyResponseWriter{w, false, false}
-		if !areReqResOk(prw, req) {
-			return
-		}
-		for _, mh := range mhs {
-			if pattern != req.URL.Path {
-				continue
-			}
-			swm.middlewares.MakeChain(mh).ServeHTTP(prw, req)
-			if !prw.eitherWriteWasCalled() {
-				continue
-			}
-			return
-		}
-		response.
-			MethodNotAllowed(fmt.Sprintf(FormatMethodNotAllowed, req.Method, pattern)).
-			Send(w)
-	})
+	if _, ok := swm.handlers[pattern]; !ok {
+		swm.handlers[pattern] = make([]http.Handler, 0)
+	}
+	swm.handlers[pattern] = append(swm.handlers[pattern], mhs...)
 }
 
 func (swm *Router) Use(handlers ...func(http.Handler) http.Handler) {
@@ -89,6 +79,34 @@ func (swm *Router) Use(handlers ...func(http.Handler) http.Handler) {
 	for _, leaf := range swm.tree {
 		leaf.Use(handlers...)
 	}
+}
+
+func (swm *Router) Load() *Router {
+	for _, leaf := range swm.tree {
+		leaf.Load()
+	}
+	for pattern, handlers := range swm.handlers {
+		swm.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
+			prw := &proxyResponseWriter{w, false, false}
+			if !areReqResOk(prw, req) {
+				return
+			}
+			for _, mh := range handlers {
+				if pattern != req.URL.Path {
+					continue
+				}
+				swm.middlewares.MakeChain(mh).ServeHTTP(prw, req)
+				if !prw.eitherWriteWasCalled() {
+					continue
+				}
+				return
+			}
+			response.
+				MethodNotAllowed(fmt.Sprintf(FormatMethodNotAllowed, req.Method, pattern)).
+				Send(w)
+		})
+	}
+	return swm
 }
 
 func (swm *Router) Group(pattern string) *Router {
@@ -100,6 +118,8 @@ func (swm *Router) Group(pattern string) *Router {
 		middlewares: swm.middlewares.Clone(),
 		options:     opts,
 		tree:        make([]*Router, 0),
+		handlers:    make(map[string][]http.Handler, 0),
+		served:      false,
 	}
 	swm.tree = append(swm.tree, leaf)
 	return leaf
