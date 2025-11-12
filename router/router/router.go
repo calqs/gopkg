@@ -92,9 +92,6 @@ func (swm *Router) Load() *Router {
 				return
 			}
 			for _, mh := range handlers {
-				if pattern != req.URL.Path {
-					continue
-				}
 				swm.middlewares.MakeChain(mh).ServeHTTP(prw, req)
 				if !prw.eitherWriteWasCalled() {
 					continue
