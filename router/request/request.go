@@ -14,26 +14,30 @@ func bindValues[T any](dst *T, vals url.Values) error {
 	v := reflect.ValueOf(dst).Elem()
 	t := v.Type()
 
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		tag := field.Tag.Get("query")
-		if tag == "" {
-			tag = strings.ToLower(field.Name)
-		}
+	switch v.Kind() {
+	case reflect.Struct:
+		for i := 0; i < t.NumField(); i++ {
+			field := t.Field(i)
+			tag := field.Tag.Get("query")
+			if tag == "" {
+				tag = strings.ToLower(field.Name)
+			}
 
-		if val := vals.Get(tag); val != "" {
-			fv := v.Field(i)
-			switch fv.Kind() {
-			case reflect.String:
-				fv.SetString(val)
-			case reflect.Int:
-				if n, err := strconv.Atoi(val); err == nil {
-					fv.SetInt(int64(n))
+			if val := vals.Get(tag); val != "" {
+				fv := v.Field(i)
+				switch fv.Kind() {
+				case reflect.String:
+					fv.SetString(val)
+				case reflect.Int:
+					if n, err := strconv.Atoi(val); err == nil {
+						fv.SetInt(int64(n))
+					}
+					// @TODO: add more types
 				}
-				// @TODO: add more types
 			}
 		}
 	}
+
 	return nil
 }
 

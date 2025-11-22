@@ -13,4 +13,3 @@ replace github.com/calqs/gopkg/env => ./env
 replace github.com/calqs/gopkg/gormslog => ./gormslog
 
 replace github.com/calqs/gopkg/orm => ./orm
-
