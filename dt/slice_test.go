@@ -124,3 +124,8 @@ func Test_I_Can_Transform_A_Slice(t *testing.T) {
 	assert.Equal(t, []string{"1", "2", "3"}, SliceTransform([]int{1, 2, 3}, func(v int) string { return strconv.Itoa(v) }))
 	assert.Equal(t, []string{}, SliceTransform([]int{}, func(v int) string { return strconv.Itoa(v) }))
 }
+
+func Test_I_Can_Filter_A_Slice(t *testing.T) {
+	assert.Equal(t, []int{2, 4, 6, 8}, SliceFilterFunc([]int{1, 2, 3, 4, 5, 6, 7, 8}, func(it int) bool { return it%2 == 0 }))
+	assert.Equal(t, []int{}, SliceFilterFunc([]int{}, func(it int) bool { return it%2 == 0 }))
+}

@@ -56,3 +56,13 @@ func SliceTransform[FromT, ToT any](from []FromT, transformer func(FromT) ToT) [
 	}
 	return res
 }
+
+func SliceFilterFunc[ItemT any](from []ItemT, filter func(ItemT) bool) []ItemT {
+	res := make([]ItemT, 0, len(from))
+	for _, val := range from {
+		if filter(val) {
+			res = append(res, val)
+		}
+	}
+	return res
+}
