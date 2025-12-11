@@ -129,3 +129,13 @@ func Test_I_Can_Filter_A_Slice(t *testing.T) {
 	assert.Equal(t, []int{2, 4, 6, 8}, SliceFilterFunc([]int{1, 2, 3, 4, 5, 6, 7, 8}, func(it int) bool { return it%2 == 0 }))
 	assert.Equal(t, []int{}, SliceFilterFunc([]int{}, func(it int) bool { return it%2 == 0 }))
 }
+
+func Test_I_Can_Match_Slices(t *testing.T) {
+	type testT struct {
+		a, b int
+	}
+	assert.True(t, SlicesMatch([]int{1, 2, 3}, []int{1, 2, 3}, func(a, b int) bool { return a == b }))
+	assert.False(t, SlicesMatch([]int{1, 2, 3}, []int{1, 2, 4}, func(a, b int) bool { return a == b }))
+	assert.False(t, SlicesMatch([]int{1, 2, 3}, []int{1, 2, 3, 4}, func(a, b int) bool { return a == b }))
+	assert.True(t, SlicesMatch([]testT{{1, 2}, {3, 4}}, []testT{{1, 2}, {3, 4}}, func(a, b testT) bool { return a.a == b.a && a.b == b.b }))
+}

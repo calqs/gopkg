@@ -66,3 +66,16 @@ func SliceFilterFunc[ItemT any](from []ItemT, filter func(ItemT) bool) []ItemT {
 	}
 	return res
 }
+
+func SlicesMatch[ItemT any](s1, s2 []ItemT, match func(ItemT, ItemT) bool) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	for i, v1 := range s1 {
+		v2 := s2[i]
+		if !match(v1, v2) {
+			return false
+		}
+	}
+	return true
+}
