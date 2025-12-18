@@ -12,6 +12,9 @@ func JsonBodyRequest[T any](req *http.Request) (*T, error) {
 	if req == nil {
 		return nil, fmt.Errorf("%w: http.Request", ErrNilPointer)
 	}
+	if req.Body == nil {
+		return nil, nil
+	}
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		return nil, err
