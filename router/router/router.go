@@ -17,7 +17,7 @@ type Router struct {
 	options     Options
 	tree        []*Router
 	handlers    map[string][]http.Handler
-	served      bool
+	loaded      bool
 }
 
 func NewRouter(ctx context.Context, opts ...OptionFunc) *Router {
@@ -36,11 +36,15 @@ func NewRouter(ctx context.Context, opts ...OptionFunc) *Router {
 		options:     serverOpts,
 		tree:        make([]*Router, 0),
 		handlers:    make(map[string][]http.Handler, 0),
-		served:      false,
+		loaded:      false,
 	}
 }
 
 func (swm *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// autoloading routes if not already done
+	if swm.loaded == false {
+		swm.Load()
+	}
 	prw := proxyResponseWriter{rw: w}
 	for _, leaf := range swm.tree {
 		leaf.ServeHTTP(&prw, r)
@@ -48,7 +52,6 @@ func (swm *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
 	swm.mux.ServeHTTP(w, r)
 }
 
@@ -68,6 +71,13 @@ func areReqResOk(w http.ResponseWriter, req *http.Request) bool {
 func (swm *Router) Handle(pattern string, mhs ...http.Handler) {
 	// have to clean path, at least for security reasons
 	pattern = CleanPath(swm.options.BaseURL + CleanPath(pattern))
+	// if the router is already loaded, we need to reset the handlers
+	// so we don't try to overwrite already registered handlers
+	// and trigger an error from the muxer
+	if swm.loaded == true {
+		swm.handlers = make(map[string][]http.Handler, 0)
+		swm.loaded = false
+	}
 	if _, ok := swm.handlers[pattern]; !ok {
 		swm.handlers[pattern] = make([]http.Handler, 0)
 	}
@@ -103,6 +113,7 @@ func (swm *Router) Load() *Router {
 				Send(w)
 		})
 	}
+	swm.loaded = true
 	return swm
 }
 
@@ -116,7 +127,7 @@ func (swm *Router) Group(pattern string) *Router {
 		options:     opts,
 		tree:        make([]*Router, 0),
 		handlers:    make(map[string][]http.Handler, 0),
-		served:      false,
+		loaded:      false,
 	}
 	swm.tree = append(swm.tree, leaf)
 	return leaf

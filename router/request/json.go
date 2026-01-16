@@ -24,6 +24,12 @@ func JsonBodyRequest[T any](req *http.Request) (*T, error) {
 	}
 	var entity T
 	if err := json.Unmarshal(body, &entity); err != nil {
+		switch err.(type) {
+		case *json.UnmarshalTypeError:
+			return nil, fmt.Errorf("%w: %w", ErrPayloadWrongFieldType, err)
+		case *json.SyntaxError:
+			return nil, fmt.Errorf("%w: %w", ErrPayloadWrongShape, err)
+		}
 		return nil, err
 	}
 	return &entity, nil

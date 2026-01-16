@@ -25,4 +25,19 @@ func Test_JsonBodyRequest(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, fake_request{123}, *res)
 	})
+	t.Run("with a body and a bad json field type", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/test/methods", strings.NewReader(`{"cabane": "string_123"}`))
+		res, err := JsonBodyRequest[fake_request](req)
+		assert.ErrorIs(t, err, ErrPayloadWrongFieldType)
+		assert.ErrorIs(t, err, ErrPayloadMalformed)
+		assert.Nil(t, res)
+	})
+	t.Run("with a body and a bad json shape", func(t *testing.T) {
+		// missing trailing }
+		req := httptest.NewRequest(http.MethodGet, "/test/methods", strings.NewReader(`{"cabane": 123, "dog": "suzie"`))
+		res, err := JsonBodyRequest[fake_request](req)
+		assert.ErrorIs(t, err, ErrPayloadWrongShape)
+		assert.ErrorIs(t, err, ErrPayloadMalformed)
+		assert.Nil(t, res)
+	})
 }

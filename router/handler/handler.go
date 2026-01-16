@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/calqs/gopkg/router/request"
@@ -45,6 +46,9 @@ func (genHandler GenHandler[RequestT, ResponseT]) Transform() Handler {
 	return func(r *http.Request) response.Response {
 		res, err := request.ExtractData[RequestT](r)
 		if err != nil {
+			if errors.Is(err, request.ErrPayloadMalformed) {
+				return response.BadRequest("invalid json payload", err)
+			}
 			return response.InternalServerError("invalid data type", err)
 		}
 		return genHandler(&Request[RequestT]{

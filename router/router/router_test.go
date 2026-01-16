@@ -18,10 +18,7 @@ import (
 type fake_req struct{}
 
 func TestICanDoRouting(t *testing.T) {
-	router := &Router{
-		mux: http.NewServeMux(),
-	}
-
+	router := NewRouter(t.Context())
 	rw := NewStringResponse(func(data []byte, rw http.ResponseWriter) {
 		rw.WriteHeader(200)
 		rw.Write(data)
@@ -35,12 +32,9 @@ func TestICanDoRouting(t *testing.T) {
 			return rw.WithAnyData("test_post")
 		}),
 	)
+	router.Load()
 
 	t.Run("post & get routes: test post should be OK", func(t *testing.T) {
-		server := httptest.NewServer(router.mux)
-		t.Cleanup(func() {
-			server.Close()
-		})
 		req1 := httptest.NewRequest(http.MethodPost, "/test", nil)
 		rec1 := httptest.NewRecorder()
 		router.ServeHTTP(rec1, req1)
@@ -64,7 +58,7 @@ func TestICanDoRouting(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf(FormatMethodNotAllowed, http.MethodDelete, "/test"), httpErr.Message)
 	})
 	t.Run("with options: base path", func(t *testing.T) {
-		nrt := NewRouter(t.Context(), WithBaseURL("/cabane"))
+		nrt := NewRouter(t.Context(), OptionWithBaseURL("/cabane"))
 		nrt.Handle(
 			"/123",
 			public.Get(func(p *handler.Request[fake_req]) response.Response {
@@ -77,6 +71,7 @@ func TestICanDoRouting(t *testing.T) {
 				return rw.WithAnyData("test_get_slash")
 			}),
 		)
+		nrt.Load()
 		{
 			req := httptest.NewRequest(http.MethodGet, "/cabane/123", nil)
 			rec := httptest.NewRecorder()
@@ -121,6 +116,7 @@ func TestAllMethod(t *testing.T) {
 			return rw.WithAnyData(&resp{"test_delete"})
 		}),
 	)
+	router.Load()
 
 	t.Run("get & post & put & patch & delete: get", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/test/methods", nil)
@@ -210,7 +206,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		)
 		req := httptest.NewRequest(http.MethodGet, "/test/request?cabane=123", nil)
 		rec := httptest.NewRecorder()
-		router.mux.ServeHTTP(rec, req)
+		router.ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)
 		res := resp{}
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
@@ -243,7 +239,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 		)
 		req := httptest.NewRequest(http.MethodPost, "/test/request?cabane=123", strings.NewReader(`{"dog": "suzie", "amount": 1}`))
 		rec := httptest.NewRecorder()
-		router.mux.ServeHTTP(rec, req)
+		router.ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusCreated, rec.Code)
 		res := resp{}
 		assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &res))
@@ -258,7 +254,7 @@ func Test_I_Can_Route_Groups(t *testing.T) {
 			h.ServeHTTP(w, req)
 		})
 	}
-	br := NewRouter(t.Context(), WithBaseURL("/test"))
+	br := NewRouter(t.Context(), OptionWithBaseURL("/test"))
 	rw := NewStringResponse(func(data []byte, rw http.ResponseWriter) {
 		rw.WriteHeader(200)
 		rw.Write(data)
