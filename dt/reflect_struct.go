@@ -40,7 +40,7 @@ func assignValue(i int, val string, v reflect.Value) {
 	switch fv.Kind() {
 	case reflect.String:
 		fv.SetString(val)
-	case reflect.Int:
+	case reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int:
 		if n, err := strconv.Atoi(val); err == nil {
 			fv.SetInt(int64(n))
 		}
