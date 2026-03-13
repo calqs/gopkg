@@ -25,7 +25,7 @@ func (rh *ResponseHeaders) SetCookie(cookie http.Cookie) {
 
 func (rh *ResponseHeaders) WriteHeaders(w http.ResponseWriter) {
 	for _, header := range rh.Headers {
-		w.Header().Set(header[0], header[1])
+		w.Header().Add(header[0], header[1])
 	}
 }
 
