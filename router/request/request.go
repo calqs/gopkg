@@ -8,6 +8,49 @@ import (
 	"strings"
 )
 
+func setField(field reflect.Value, value string) error {
+	// If it's a pointer, allocate and move into the element
+	if field.Kind() == reflect.Pointer {
+		// Create a new instance of the underlying type
+		// e.g., if field is *int, result is a reflect.Value of an int pointer
+		ptr := reflect.New(field.Type().Elem())
+
+		// Recursively call setField on the element the pointer points to
+		if err := setField(ptr.Elem(), value); err != nil {
+			return err
+		}
+
+		// Set the struct field to our new pointer
+		field.Set(ptr)
+		return nil
+	}
+
+	// Actual data conversion logic
+	switch field.Kind() {
+	case reflect.String:
+		field.SetString(value)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		i, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return err
+		}
+		field.SetInt(i)
+	case reflect.Bool:
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			return err
+		}
+		field.SetBool(b)
+	case reflect.Float32, reflect.Float64:
+		f, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return err
+		}
+		field.SetFloat(f)
+	}
+	return nil
+}
+
 // bindValues tries to find "query" tag in the passed pointer to generic type
 // and tries to assign a querystring parameter matching that tag
 func bindValues[T any](dst *T, vals url.Values) error {
@@ -23,16 +66,12 @@ func bindValues[T any](dst *T, vals url.Values) error {
 				tag = strings.ToLower(field.Name)
 			}
 
-			if val := vals.Get(tag); val != "" {
-				fv := v.Field(i)
-				switch fv.Kind() {
-				case reflect.String:
-					fv.SetString(val)
-				case reflect.Int:
-					if n, err := strconv.Atoi(val); err == nil {
-						fv.SetInt(int64(n))
-					}
-					// @TODO: add more types
+			tagVals, exists := vals[tag]
+			if exists && len(tagVals) > 0 {
+				// tagVals[0] could be "", but we still want to set it
+				// especially if the struct field is a *string
+				if err := setField(v.Field(i), tagVals[0]); err != nil {
+					return err
 				}
 			}
 		}
