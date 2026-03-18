@@ -1,6 +1,9 @@
 package sqlb
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type EqNode struct {
 	column     string
@@ -10,6 +13,11 @@ type EqNode struct {
 }
 
 func (eq *EqNode) ToSQL(depth int) (string, []any) {
+	if v, ok := eq.value.(string); ok {
+		if strings.HasPrefix(v, "'") && strings.HasSuffix(v, "'") {
+			return fmt.Sprintf("%s %s %s", eq.column, eq.comparison, v), []any{}
+		}
+	}
 	return fmt.Sprintf("%s %s $%d", eq.column, eq.comparison, depth), []any{eq.value}
 }
 
