@@ -28,6 +28,13 @@ func (eq *EqNode) And() *AndNode {
 	return and
 }
 
+func (eq *EqNode) Or() *OrNode {
+	or := Or()
+	eq.NextNode = or
+	or.PrevNode = eq
+	return or
+}
+
 func Eq(column string, value any) *EqNode {
 	return &EqNode{
 		column:     column,

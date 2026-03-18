@@ -64,6 +64,10 @@ func (wb *Builder) OrBlock(node Node, rest ...Node) *Builder {
 	return wb.pushNode(OrBlock(node, rest...))
 }
 
+func (wb *Builder) AndBlock(node Node, rest ...Node) *Builder {
+	return wb.pushNode(AndBlock(node, rest...))
+}
+
 func (wb *Builder) Select(columns ...string) *Builder {
 	wb.columns = columns
 	return wb

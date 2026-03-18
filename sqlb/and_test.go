@@ -29,3 +29,12 @@ func TestAndILike(t *testing.T) {
 	assert.Equal(t, "WHERE id = $1 AND name ILIKE '%' || $2 || '%'", query)
 	assert.Equal(t, []any{1, "test"}, values)
 }
+
+func TestAndBlock(t *testing.T) {
+	wb := Where().Eq("test", 2).And().IsNull("deleted_at")
+	wb.AndBlock(Eq("id", 1).Or().IsNull("deleted_at"), And(), Eq("name", "test"))
+	query, values, err := wb.BuildSQL()
+	assert.Nil(t, err)
+	assert.Equal(t, "WHERE test = $1 AND deleted_at IS NULL AND ( id = $2 OR deleted_at IS NULL AND name = $3 )", query)
+	assert.Equal(t, []any{2, 1, "test"}, values)
+}

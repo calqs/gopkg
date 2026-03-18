@@ -44,3 +44,24 @@ func (a *AndNode) ILike(column, value string, wildcards Wildcards) *LikeNode {
 	like.PrevNode = a
 	return like
 }
+
+func AndBlock(node Node, rest ...Node) *AndNode {
+	chain := node
+	for _, r := range rest {
+		r.SetPrev(chain)
+		chain.SetNext(r)
+		chain = r
+	}
+	chain.SetNext(CloseParenthesis())
+	chain.Next().SetPrev(chain)
+	for chain.Prev() != nil {
+		chain = chain.Prev()
+	}
+	n := OpenParenthesis()
+	chain.SetPrev(n)
+	n.SetNext(chain)
+	and := And()
+	and.SetNext(n)
+	and.NextNode.SetPrev(and)
+	return and
+}

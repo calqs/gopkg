@@ -18,24 +18,17 @@ func Or() *OrNode {
 }
 
 func (o *OrNode) Eq(column string, value any) *EqNode {
-	return &EqNode{
-		column: column,
-		value:  value,
-		NodeRoutine: NodeRoutine{
-			PrevNode: nil,
-			NextNode: nil,
-		},
-	}
+	eq := Eq(column, value)
+	o.NextNode = eq
+	eq.PrevNode = o
+	return eq
 }
 
 func (o *OrNode) IsNull(column string) *IsNullNode {
-	return &IsNullNode{
-		column: column,
-		NodeRoutine: NodeRoutine{
-			PrevNode: nil,
-			NextNode: nil,
-		},
-	}
+	isNull := IsNull(column)
+	o.NextNode = isNull
+	isNull.PrevNode = o
+	return isNull
 }
 
 func OrBlock(node Node, rest ...Node) *OrNode {
