@@ -30,3 +30,17 @@ func (a *AndNode) IsNull(column string) *IsNullNode {
 	isNull.PrevNode = a
 	return isNull
 }
+
+func (a *AndNode) Like(column, value string, wildcards Wildcards) *LikeNode {
+	like := Like(column, value, wildcards)
+	a.NextNode = like
+	like.PrevNode = a
+	return like
+}
+
+func (a *AndNode) ILike(column, value string, wildcards Wildcards) *LikeNode {
+	like := ILike(column, value, wildcards)
+	a.NextNode = like
+	like.PrevNode = a
+	return like
+}
