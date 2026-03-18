@@ -2,4 +2,4 @@ package sqlb
 
 import "errors"
 
-var ErrNilPointer = errors.New("nil pointer")
+var ErrEmptyWhereClause = errors.New("empty where clause")
