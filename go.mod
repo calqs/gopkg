@@ -16,3 +16,4 @@ replace github.com/calqs/gopkg/orm => ./orm
 
 replace github.com/calqs/gopkg/tree => ./tree
 
+replace github.com/calqs/gopkg/sqlb => ./sqlb
