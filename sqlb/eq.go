@@ -14,7 +14,7 @@ type EqNode struct {
 
 func (eq *EqNode) ToSQL(depth int) (string, []any) {
 	if v, ok := eq.value.(string); ok {
-		if strings.HasPrefix(v, "'") && strings.HasSuffix(v, "'") {
+		if strings.HasPrefix(v, `"`) && strings.HasSuffix(v, `"`) {
 			return fmt.Sprintf("%s %s %s", eq.column, eq.comparison, v), []any{}
 		}
 	}

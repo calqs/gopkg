@@ -15,9 +15,9 @@ func TestEq(t *testing.T) {
 }
 
 func TestEqWithLiteralString(t *testing.T) {
-	wb := Where().Eq("id", "'1'")
+	wb := Where().Eq("id", `"1"`)
 	query, values, err := wb.BuildSQL()
 	assert.Nil(t, err)
-	assert.Equal(t, "WHERE id = '1'", query)
+	assert.Equal(t, "WHERE id = \"1\"", query)
 	assert.Equal(t, []any{}, values)
 }
