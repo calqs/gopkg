@@ -46,3 +46,27 @@ func Eq(column string, value any) *EqNode {
 		},
 	}
 }
+
+func Gt(column string, value any) *EqNode {
+	return &EqNode{
+		column:     column,
+		value:      value,
+		comparison: ComparisonGt,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}
+
+func Lt(column string, value any) *EqNode {
+	return &EqNode{
+		column:     column,
+		value:      value,
+		comparison: ComparisonLt,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}

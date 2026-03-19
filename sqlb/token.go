@@ -27,6 +27,28 @@ func (t *Token) Eq(column string, value any) *EqNode {
 	}
 }
 
+func (t *Token) Gt(column string, value any) *EqNode {
+	return &EqNode{
+		column: column,
+		value:  value,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}
+
+func (t *Token) Lt(column string, value any) *EqNode {
+	return &EqNode{
+		column: column,
+		value:  value,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}
+
 func (t *Token) IsNull(column string) *IsNullNode {
 	return &IsNullNode{
 		column: column,

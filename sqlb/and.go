@@ -24,6 +24,13 @@ func (a *AndNode) Eq(column string, value any) *EqNode {
 	return eq
 }
 
+func (a *AndNode) Gt(column string, value any) *EqNode {
+	eq := Gt(column, value)
+	a.NextNode = eq
+	eq.PrevNode = a
+	return eq
+}
+
 func (a *AndNode) IsNull(column string) *IsNullNode {
 	isNull := IsNull(column)
 	a.NextNode = isNull

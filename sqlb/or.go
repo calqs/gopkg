@@ -24,6 +24,13 @@ func (o *OrNode) Eq(column string, value any) *EqNode {
 	return eq
 }
 
+func (o *OrNode) Gt(column string, value any) *EqNode {
+	eq := Gt(column, value)
+	o.NextNode = eq
+	eq.PrevNode = o
+	return eq
+}
+
 func (o *OrNode) Like(column, value string, wildcards Wildcards) *LikeNode {
 	like := Like(column, value, wildcards)
 	o.NextNode = like
