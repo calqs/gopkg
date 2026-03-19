@@ -60,6 +60,10 @@ func (wb *Builder) IsNull(column string) *Builder {
 	return wb.pushNode(IsNull(column))
 }
 
+func (wb *Builder) NotNull(column string) *Builder {
+	return wb.pushNode(NotNull(column))
+}
+
 func (wb *Builder) And() *Builder {
 	return wb.pushNode(And())
 }
@@ -84,4 +88,12 @@ func (wb *Builder) Select(columns ...string) *Builder {
 func (wb *Builder) From(from ...string) *Builder {
 	wb.from = from
 	return wb
+}
+
+func (s *Builder) Where(nodes ...Node) *Builder {
+	b := Where(nodes...)
+	b.joins = s.joins
+	b.columns = s.columns
+	b.from = s.from
+	return b
 }

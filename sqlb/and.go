@@ -17,41 +17,6 @@ func And() *AndNode {
 	}
 }
 
-func (a *AndNode) Eq(column string, value any) *EqNode {
-	eq := Eq(column, value)
-	a.NextNode = eq
-	eq.PrevNode = a
-	return eq
-}
-
-func (a *AndNode) Gt(column string, value any) *EqNode {
-	eq := Gt(column, value)
-	a.NextNode = eq
-	eq.PrevNode = a
-	return eq
-}
-
-func (a *AndNode) IsNull(column string) *IsNullNode {
-	isNull := IsNull(column)
-	a.NextNode = isNull
-	isNull.PrevNode = a
-	return isNull
-}
-
-func (a *AndNode) Like(column, value string, wildcards Wildcards) *LikeNode {
-	like := Like(column, value, wildcards)
-	a.NextNode = like
-	like.PrevNode = a
-	return like
-}
-
-func (a *AndNode) ILike(column, value string, wildcards Wildcards) *LikeNode {
-	like := ILike(column, value, wildcards)
-	a.NextNode = like
-	like.PrevNode = a
-	return like
-}
-
 func AndBlock(node Node, rest ...Node) *AndNode {
 	chain := node
 	for _, r := range rest {
@@ -70,5 +35,19 @@ func AndBlock(node Node, rest ...Node) *AndNode {
 	and := And()
 	and.SetNext(n)
 	and.NextNode.SetPrev(and)
+	return and
+}
+
+func (eq *EqNode) And() *AndNode {
+	and := And()
+	eq.NextNode = and
+	and.PrevNode = eq
+	return and
+}
+
+func (n *IsNullNode) And() *AndNode {
+	and := And()
+	n.NextNode = and
+	and.PrevNode = n
 	return and
 }

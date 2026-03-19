@@ -19,4 +19,5 @@ const (
 	ComparisonLeq   Comparison = "<="
 	ComparisonLike  Comparison = "LIKE"
 	ComparisonILike Comparison = "ILIKE"
+	ComparisonOn    Comparison = "ON"
 )

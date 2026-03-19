@@ -21,9 +21,21 @@ func IsNull(column string) *IsNullNode {
 	}
 }
 
-func (n *IsNullNode) And() *AndNode {
-	and := And()
-	n.NextNode = and
-	and.PrevNode = n
-	return and
+type NotNullNode struct {
+	column string
+	NodeRoutine
+}
+
+func (n *NotNullNode) ToSQL(depth int) (string, []any) {
+	return fmt.Sprintf("%s IS NOT NULL", n.column), []any{}
+}
+
+func NotNull(column string) *NotNullNode {
+	return &NotNullNode{
+		column: column,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
 }

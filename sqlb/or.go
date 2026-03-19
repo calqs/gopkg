@@ -17,41 +17,6 @@ func Or() *OrNode {
 	}
 }
 
-func (o *OrNode) Eq(column string, value any) *EqNode {
-	eq := Eq(column, value)
-	o.NextNode = eq
-	eq.PrevNode = o
-	return eq
-}
-
-func (o *OrNode) Gt(column string, value any) *EqNode {
-	eq := Gt(column, value)
-	o.NextNode = eq
-	eq.PrevNode = o
-	return eq
-}
-
-func (o *OrNode) Like(column, value string, wildcards Wildcards) *LikeNode {
-	like := Like(column, value, wildcards)
-	o.NextNode = like
-	like.PrevNode = o
-	return like
-}
-
-func (o *OrNode) ILike(column, value string, wildcards Wildcards) *LikeNode {
-	like := ILike(column, value, wildcards)
-	o.NextNode = like
-	like.PrevNode = o
-	return like
-}
-
-func (o *OrNode) IsNull(column string) *IsNullNode {
-	isNull := IsNull(column)
-	o.NextNode = isNull
-	isNull.PrevNode = o
-	return isNull
-}
-
 func OrBlock(node Node, rest ...Node) *OrNode {
 	chain := node
 	for _, r := range rest {
@@ -70,5 +35,12 @@ func OrBlock(node Node, rest ...Node) *OrNode {
 	or := Or()
 	or.SetNext(n)
 	or.NextNode.SetPrev(or)
+	return or
+}
+
+func (eq *EqNode) Or() *OrNode {
+	or := Or()
+	eq.NextNode = or
+	or.PrevNode = eq
 	return or
 }

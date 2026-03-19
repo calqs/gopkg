@@ -9,9 +9,22 @@ type Builder struct {
 	node    Node
 	columns []string
 	from    []string
+	joins   Node
 	limit   *int
 	offset  *int
 	order   *Order
+}
+
+func (wb *Builder) pushJoin(node Node) *Builder {
+	if wb.joins == nil {
+		wb.joins = node
+		return wb
+	}
+	for ; wb.joins.Next() != nil; wb.joins = wb.joins.Next() {
+	}
+	wb.joins.SetNext(node)
+	node.SetPrev(wb.joins)
+	return wb
 }
 
 func (wb *Builder) pushNode(node Node) *Builder {
@@ -30,36 +43,61 @@ func (wb *Builder) buildSelect(b *strings.Builder) {
 	if len(wb.columns) > 0 {
 		b.WriteString("SELECT ")
 		b.WriteString(strings.Join(wb.columns, ", "))
+		b.WriteRune(' ')
 	}
 	if len(wb.from) > 0 {
-		b.WriteString(" FROM ")
+		b.WriteString("FROM ")
 		b.WriteString(strings.Join(wb.from, ", "))
+		b.WriteRune(' ')
 	}
 }
 
-func (wb *Builder) BuildSQL() (string, []any, error) {
+func (wb *Builder) buildJoins(b *strings.Builder) {
+	if wb.joins == nil {
+		return
+	}
+	for ; wb.joins.Prev() != nil; wb.joins = wb.joins.Prev() {
+	}
+	for wb.joins != nil {
+		sql, _ := wb.joins.ToSQL(0)
+		b.WriteString(strings.TrimSpace(sql))
+		b.WriteRune(' ')
+		wb.joins = wb.joins.Next()
+	}
+}
+
+func (wb *Builder) buildWhere(b *strings.Builder) ([]any, error) {
+	values := []any{}
 	if wb.node == nil {
-		return "", []any{}, ErrEmptyWhereClause
+		return values, nil
 	}
 	fnode := wb.node
 	for fnode.Prev() != nil {
 		fnode = fnode.Prev()
 	}
-	values := []any{}
-	var query strings.Builder
-	wb.buildSelect(&query)
 	if wb.node != nil {
-		query.WriteString(" WHERE ")
+		b.WriteString("WHERE ")
 	}
 	for it := 1; fnode != nil; {
 		sql, val := fnode.ToSQL(it)
-		query.WriteString(strings.TrimSpace(sql))
-		query.WriteRune(' ')
+		b.WriteString(strings.TrimSpace(sql))
+		b.WriteRune(' ')
 		for _, v := range val {
 			values = append(values, v)
 			it++
 		}
 		fnode = fnode.Next()
+	}
+	return values, nil
+}
+
+func (wb *Builder) BuildSQL() (string, []any, error) {
+	var query strings.Builder
+	wb.buildSelect(&query)
+	wb.buildJoins(&query)
+	values, err := wb.buildWhere(&query)
+	if err != nil {
+		return "", nil, err
 	}
 	if wb.order != nil && wb.order.column != nil {
 		query.WriteString("ORDER BY ")

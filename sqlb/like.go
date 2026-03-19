@@ -86,3 +86,31 @@ func ILike(column, value string, wildcards Wildcards) *LikeNode {
 		wildcards: wildcards,
 	}
 }
+
+func (a *AndNode) Like(column, value string, wildcards Wildcards) *LikeNode {
+	like := Like(column, value, wildcards)
+	a.NextNode = like
+	like.PrevNode = a
+	return like
+}
+
+func (a *AndNode) ILike(column, value string, wildcards Wildcards) *LikeNode {
+	like := ILike(column, value, wildcards)
+	a.NextNode = like
+	like.PrevNode = a
+	return like
+}
+
+func (o *OrNode) Like(column, value string, wildcards Wildcards) *LikeNode {
+	like := Like(column, value, wildcards)
+	o.NextNode = like
+	like.PrevNode = o
+	return like
+}
+
+func (o *OrNode) ILike(column, value string, wildcards Wildcards) *LikeNode {
+	like := ILike(column, value, wildcards)
+	o.NextNode = like
+	like.PrevNode = o
+	return like
+}

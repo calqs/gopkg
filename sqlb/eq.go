@@ -21,20 +21,6 @@ func (eq *EqNode) ToSQL(depth int) (string, []any) {
 	return fmt.Sprintf("%s %s $%d", eq.column, eq.comparison, depth), []any{eq.value}
 }
 
-func (eq *EqNode) And() *AndNode {
-	and := And()
-	eq.NextNode = and
-	and.PrevNode = eq
-	return and
-}
-
-func (eq *EqNode) Or() *OrNode {
-	or := Or()
-	eq.NextNode = or
-	or.PrevNode = eq
-	return or
-}
-
 func Eq(column string, value any) *EqNode {
 	return &EqNode{
 		column:     column,
@@ -69,4 +55,53 @@ func Lt(column string, value any) *EqNode {
 			NextNode: nil,
 		},
 	}
+}
+
+func (a *AndNode) Eq(column string, value any) *EqNode {
+	eq := Eq(column, value)
+	a.NextNode = eq
+	eq.PrevNode = a
+	return eq
+}
+
+func (a *AndNode) Gt(column string, value any) *EqNode {
+	eq := Gt(column, value)
+	a.NextNode = eq
+	eq.PrevNode = a
+	return eq
+}
+
+func (a *AndNode) Lt(column string, value any) *EqNode {
+	eq := Lt(column, value)
+	a.NextNode = eq
+	eq.PrevNode = a
+	return eq
+}
+
+func (a *AndNode) IsNull(column string) *IsNullNode {
+	isNull := IsNull(column)
+	a.NextNode = isNull
+	isNull.PrevNode = a
+	return isNull
+}
+
+func (o *OrNode) IsNull(column string) *IsNullNode {
+	isNull := IsNull(column)
+	o.NextNode = isNull
+	isNull.PrevNode = o
+	return isNull
+}
+
+func (o *OrNode) Eq(column string, value any) *EqNode {
+	eq := Eq(column, value)
+	o.NextNode = eq
+	eq.PrevNode = o
+	return eq
+}
+
+func (o *OrNode) Gt(column string, value any) *EqNode {
+	eq := Gt(column, value)
+	o.NextNode = eq
+	eq.PrevNode = o
+	return eq
 }
