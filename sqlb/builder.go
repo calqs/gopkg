@@ -64,8 +64,9 @@ func (wb *Builder) BuildSQL() (string, []any, error) {
 	if wb.order != nil && wb.order.column != nil {
 		query.WriteString("ORDER BY ")
 		query.WriteString(*wb.order.column)
-		query.WriteString(" ")
+		query.WriteRune(' ')
 		query.WriteString(wb.order.direction)
+		query.WriteRune(' ')
 	}
 	if wb.limit != nil {
 		query.WriteString("LIMIT ")
@@ -75,7 +76,6 @@ func (wb *Builder) BuildSQL() (string, []any, error) {
 	if wb.offset != nil {
 		query.WriteString("OFFSET ")
 		query.WriteString(strconv.Itoa(*wb.offset))
-		query.WriteRune(' ')
 	}
 	return strings.TrimSpace(query.String()), values, nil
 }
