@@ -56,6 +56,10 @@ func (wb *Builder) Lt(column string, value any) *Builder {
 	return wb.pushNode(Lt(column, value))
 }
 
+func (wb *Builder) In(column string, values ...any) *Builder {
+	return wb.pushNode(In(column, values...))
+}
+
 func (wb *Builder) IsNull(column string) *Builder {
 	return wb.pushNode(IsNull(column))
 }

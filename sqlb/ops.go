@@ -20,4 +20,5 @@ const (
 	ComparisonLike  Comparison = "LIKE"
 	ComparisonILike Comparison = "ILIKE"
 	ComparisonOn    Comparison = "ON"
+	ComparisonIn    Comparison = "IN"
 )
