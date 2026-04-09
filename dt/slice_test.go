@@ -141,13 +141,12 @@ func Test_I_Can_Match_Slices(t *testing.T) {
 }
 
 func TestSortEqual(t *testing.T) {
-	t.Run("equal", func(t *testing.T) {
-		assert.True(t, SortEqual([]int{3, 1, 2}, []int{1, 2, 3}))
-	})
-	t.Run("not equal", func(t *testing.T) {
-		assert.False(t, SortEqual([]int{3, 1, 2}, []int{1, 2, 4}))
-	})
-	t.Run("not equal length", func(t *testing.T) {
-		assert.False(t, SortEqual([]int{3, 1, 2}, []int{1, 2}))
-	})
+	assert.True(t, SortEqual([]int{3, 1, 2}, []int{1, 2, 3}))
+	assert.False(t, SortEqual([]int{3, 1, 2}, []int{1, 2, 4}))
+	assert.False(t, SortEqual([]int{3, 1, 2}, []int{1, 2}))
+}
+
+func TestUnique(t *testing.T) {
+	assert.EqualValues(t, []int{1, 2, 3}, Unique([]int{1, 2, 3, 1, 2, 3}))
+	assert.EqualValues(t, []int{}, Unique([]int{}))
 }

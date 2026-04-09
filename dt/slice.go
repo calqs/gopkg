@@ -95,3 +95,23 @@ func SortEqual[ItemT cmp.Ordered](a, b []ItemT) bool {
 	slices.Sort(bCopy)
 	return slices.Equal(aCopy, bCopy)
 }
+
+func CountValues[ItemT comparable, ValueT Number](s []ItemT) map[ItemT]ValueT {
+	res := make(map[ItemT]ValueT, 0)
+	for _, item := range s {
+		res[item]++
+	}
+	return res
+}
+
+func MapKeysSlice[ItemT comparable, ValueT Number](m map[ItemT]ValueT) []ItemT {
+	res := make([]ItemT, 0, len(m))
+	for k := range m {
+		res = append(res, k)
+	}
+	return res
+}
+
+func Unique[ItemT comparable](s []ItemT) []ItemT {
+	return MapKeysSlice(CountValues[ItemT, int](s))
+}
