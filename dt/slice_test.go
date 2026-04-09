@@ -139,3 +139,15 @@ func Test_I_Can_Match_Slices(t *testing.T) {
 	assert.False(t, SlicesMatch([]int{1, 2, 3}, []int{1, 2, 3, 4}, func(a, b int) bool { return a == b }))
 	assert.True(t, SlicesMatch([]testT{{1, 2}, {3, 4}}, []testT{{1, 2}, {3, 4}}, func(a, b testT) bool { return a.a == b.a && a.b == b.b }))
 }
+
+func TestSortEqual(t *testing.T) {
+	t.Run("equal", func(t *testing.T) {
+		assert.True(t, SortEqual([]int{3, 1, 2}, []int{1, 2, 3}))
+	})
+	t.Run("not equal", func(t *testing.T) {
+		assert.False(t, SortEqual([]int{3, 1, 2}, []int{1, 2, 4}))
+	})
+	t.Run("not equal length", func(t *testing.T) {
+		assert.False(t, SortEqual([]int{3, 1, 2}, []int{1, 2}))
+	})
+}

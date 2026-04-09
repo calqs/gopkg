@@ -1,5 +1,10 @@
 package dt
 
+import (
+	"cmp"
+	"slices"
+)
+
 // AppendValues is a generic function for inserting values into a slice
 // ex: MapVars(res, "I", "need", "no", "sympathy") => []string{"I", "need", "no", "sympathy"}
 func AppendValues[T any](slice []T, into ...*T) {
@@ -78,4 +83,15 @@ func SlicesMatch[ItemT any](s1, s2 []ItemT, match func(ItemT, ItemT) bool) bool 
 		}
 	}
 	return true
+}
+
+func SortEqual[ItemT cmp.Ordered](a, b []ItemT) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	aCopy := slices.Clone(a)
+	bCopy := slices.Clone(b)
+	slices.Sort(aCopy)
+	slices.Sort(bCopy)
+	return slices.Equal(aCopy, bCopy)
 }
