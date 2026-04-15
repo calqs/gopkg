@@ -96,6 +96,17 @@ func SortEqual[ItemT cmp.Ordered](a, b []ItemT) bool {
 	return slices.Equal(aCopy, bCopy)
 }
 
+func SortEqualFunc[ItemT any](a, b []ItemT, less func(ItemT, ItemT) int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	aCopy := slices.Clone(a)
+	bCopy := slices.Clone(b)
+	slices.SortFunc(aCopy, less)
+	slices.SortFunc(bCopy, less)
+	return slices.EqualFunc(aCopy, bCopy, func(a, b ItemT) bool { return less(a, b) == 0 })
+}
+
 func CountValues[ItemT comparable, ValueT Number](s []ItemT) map[ItemT]ValueT {
 	res := make(map[ItemT]ValueT, 0)
 	for _, item := range s {

@@ -150,3 +150,13 @@ func TestUnique(t *testing.T) {
 	assert.EqualValues(t, []int{1, 2, 3}, Unique([]int{1, 2, 3, 1, 2, 3}))
 	assert.EqualValues(t, []int{}, Unique([]int{}))
 }
+
+func TestSortEqualFunc(t *testing.T) {
+	type user struct {
+		ID   int
+		Name string
+	}
+	users_a := []user{{1, "a"}, {2, "b"}}
+	users_b := []user{{2, "b"}, {1, "a"}}
+	assert.True(t, SortEqualFunc(users_a, users_b, func(a, b user) int { return a.ID - b.ID }))
+}
