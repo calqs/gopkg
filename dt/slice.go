@@ -126,3 +126,18 @@ func MapKeysSlice[ItemT comparable, ValueT Number](m map[ItemT]ValueT) []ItemT {
 func Unique[ItemT comparable](s []ItemT) []ItemT {
 	return MapKeysSlice(CountValues[ItemT, int](s))
 }
+
+func MergeReplace[T any](base []T, toAdd []T, equal func(a, b T) bool) []T {
+	merged := base
+	for _, budget := range toAdd {
+		index := slices.IndexFunc(base, func(b T) bool {
+			return equal(b, budget)
+		})
+		if index == -1 {
+			merged = append(merged, budget)
+		} else {
+			merged[index] = budget
+		}
+	}
+	return merged
+}

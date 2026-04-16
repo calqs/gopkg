@@ -160,3 +160,16 @@ func TestSortEqualFunc(t *testing.T) {
 	users_b := []user{{2, "b"}, {1, "a"}}
 	assert.True(t, SortEqualFunc(users_a, users_b, func(a, b user) int { return a.ID - b.ID }))
 }
+
+func TestMergeReplace(t *testing.T) {
+	type budget struct {
+		ID   int
+		Name string
+	}
+	base := []budget{{1, "a"}, {2, "b"}}
+	toAdd := []budget{{2, "B"}, {3, "c"}}
+	merged := MergeReplace(base, toAdd, func(a, b budget) bool {
+		return a.ID == b.ID
+	})
+	assert.Equal(t, []budget{{1, "a"}, {2, "B"}, {3, "c"}}, merged)
+}
