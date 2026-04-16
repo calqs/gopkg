@@ -128,7 +128,7 @@ func Unique[ItemT comparable](s []ItemT) []ItemT {
 }
 
 func MergeReplace[T any](base []T, toAdd []T, equal func(a, b T) bool) []T {
-	merged := base
+	merged := slices.Clone(base)
 	for _, budget := range toAdd {
 		index := slices.IndexFunc(base, func(b T) bool {
 			return equal(b, budget)
