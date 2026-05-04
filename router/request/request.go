@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func setField(field reflect.Value, value string) error {
@@ -26,6 +27,19 @@ func setField(field reflect.Value, value string) error {
 	}
 
 	// Actual data conversion logic
+
+	// Specific type handling
+	switch field.Type() {
+	case reflect.TypeFor[time.Time]():
+		t, err := time.Parse(time.RFC3339, value)
+		if err != nil {
+			return err
+		}
+		field.Set(reflect.ValueOf(t))
+		return nil
+	}
+
+	// Primitive type handling
 	switch field.Kind() {
 	case reflect.String:
 		field.SetString(value)
