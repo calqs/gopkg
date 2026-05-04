@@ -30,6 +30,14 @@ func TestGt(t *testing.T) {
 	assert.Equal(t, []any{1}, values)
 }
 
+func TestGte(t *testing.T) {
+	wb := Where().Gte("id", 1).Or().Gte("name", `"test"`)
+	query, values, err := wb.BuildSQL()
+	assert.Nil(t, err)
+	assert.Equal(t, "WHERE id >= $1 OR name >= \"test\"", query)
+	assert.Equal(t, []any{1}, values)
+}
+
 func TestGtWithLiteralString(t *testing.T) {
 	wb := Where().Gt("id", `"1"`).And().Gt("name", `"test"`)
 	query, values, err := wb.BuildSQL()
@@ -43,6 +51,14 @@ func TestLt(t *testing.T) {
 	query, values, err := wb.BuildSQL()
 	assert.Nil(t, err)
 	assert.Equal(t, "WHERE id < $1", query)
+	assert.Equal(t, []any{1}, values)
+}
+
+func TestLte(t *testing.T) {
+	wb := Where().Lte("id", 1).And().Lte("name", `"test"`)
+	query, values, err := wb.BuildSQL()
+	assert.Nil(t, err)
+	assert.Equal(t, "WHERE id <= $1 AND name <= \"test\"", query)
 	assert.Equal(t, []any{1}, values)
 }
 

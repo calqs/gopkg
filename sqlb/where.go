@@ -52,8 +52,16 @@ func (wb *Builder) Gt(column string, value any) *Builder {
 	return wb.pushNode(Gt(column, value))
 }
 
+func (wb *Builder) Gte(column string, value any) *Builder {
+	return wb.pushNode(Gte(column, value))
+}
+
 func (wb *Builder) Lt(column string, value any) *Builder {
 	return wb.pushNode(Lt(column, value))
+}
+
+func (wb *Builder) Lte(column string, value any) *Builder {
+	return wb.pushNode(Lte(column, value))
 }
 
 func (wb *Builder) In(column string, values ...any) *Builder {

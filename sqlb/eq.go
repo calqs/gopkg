@@ -45,11 +45,35 @@ func Gt(column string, value any) *EqNode {
 	}
 }
 
+func Gte(column string, value any) *EqNode {
+	return &EqNode{
+		column:     column,
+		value:      value,
+		comparison: ComparisonGte,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}
+
 func Lt(column string, value any) *EqNode {
 	return &EqNode{
 		column:     column,
 		value:      value,
 		comparison: ComparisonLt,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}
+
+func Lte(column string, value any) *EqNode {
+	return &EqNode{
+		column:     column,
+		value:      value,
+		comparison: ComparisonLte,
 		NodeRoutine: NodeRoutine{
 			PrevNode: nil,
 			NextNode: nil,
@@ -71,8 +95,22 @@ func (a *AndNode) Gt(column string, value any) *EqNode {
 	return eq
 }
 
+func (a *AndNode) Gte(column string, value any) *EqNode {
+	eq := Gte(column, value)
+	a.NextNode = eq
+	eq.PrevNode = a
+	return eq
+}
+
 func (a *AndNode) Lt(column string, value any) *EqNode {
 	eq := Lt(column, value)
+	a.NextNode = eq
+	eq.PrevNode = a
+	return eq
+}
+
+func (a *AndNode) Lte(column string, value any) *EqNode {
+	eq := Lte(column, value)
 	a.NextNode = eq
 	eq.PrevNode = a
 	return eq
@@ -101,6 +139,27 @@ func (o *OrNode) Eq(column string, value any) *EqNode {
 
 func (o *OrNode) Gt(column string, value any) *EqNode {
 	eq := Gt(column, value)
+	o.NextNode = eq
+	eq.PrevNode = o
+	return eq
+}
+
+func (o *OrNode) Gte(column string, value any) *EqNode {
+	eq := Gte(column, value)
+	o.NextNode = eq
+	eq.PrevNode = o
+	return eq
+}
+
+func (o *OrNode) Lt(column string, value any) *EqNode {
+	eq := Lt(column, value)
+	o.NextNode = eq
+	eq.PrevNode = o
+	return eq
+}
+
+func (o *OrNode) Lte(column string, value any) *EqNode {
+	eq := Lte(column, value)
 	o.NextNode = eq
 	eq.PrevNode = o
 	return eq

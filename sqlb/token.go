@@ -38,10 +38,34 @@ func (t *Token) Gt(column string, value any) *EqNode {
 	}
 }
 
+func (t *Token) Gte(column string, value any) *EqNode {
+	return &EqNode{
+		column:     column,
+		value:      value,
+		comparison: ComparisonGte,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}
+
 func (t *Token) Lt(column string, value any) *EqNode {
 	return &EqNode{
 		column: column,
 		value:  value,
+		NodeRoutine: NodeRoutine{
+			PrevNode: nil,
+			NextNode: nil,
+		},
+	}
+}
+
+func (t *Token) Lte(column string, value any) *EqNode {
+	return &EqNode{
+		column:     column,
+		value:      value,
+		comparison: ComparisonLte,
 		NodeRoutine: NodeRoutine{
 			PrevNode: nil,
 			NextNode: nil,
