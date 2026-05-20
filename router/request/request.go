@@ -97,9 +97,13 @@ func bindValues[T any](dst *T, vals url.Values) error {
 // ExtractData will retrieve and transform data from the request's querystring and body.
 // @todo: make querystring retrieval explici
 func ExtractData[DataT any](r *http.Request) (*DataT, error) {
-	res, err := JsonBodyRequest[DataT](r)
-	if err != nil {
-		return nil, err
+	var res *DataT
+	var err error
+	if r.Header.Get("Content-Type") == "application/json" {
+		res, err = JsonBodyRequest[DataT](r)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if res == nil {
 		var d DataT
