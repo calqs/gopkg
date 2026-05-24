@@ -37,20 +37,19 @@ func MatchAll[ItemT comparable](s []ItemT, value ItemT) bool {
 // MatchAnyFunc is a generic function trying to find at least 1 element matching a predicate
 // ex1: MatchAnyFunc([]int{1, 2, 5}, func(item int) bool {return item % 5 == 0}) => true
 // ex2: MatchAnyFunc([]int{1, 2, 6}, func(item int) bool {return item % 5 == 0}) => false
-func MatchAnyFunc[ItemT any](slice []ItemT, match func(ItemT) bool) (ItemT, error) {
+func MatchAnyFunc[ItemT any](slice []ItemT, match func(ItemT) bool) *ItemT {
 	for _, item := range slice {
 		if match(item) {
-			return item, nil
+			return &item
 		}
 	}
-	var dummy ItemT
-	return dummy, ErrAnyCouldNotFind
+	return nil
 }
 
 // MatchAny is a generic function trying to find at least 1 element matching a value
 // ex1: MatchAny([]string{"got", "me", "on", "my", "knees"}, "layla") => false
 // ex2: MatchAny([]string{"like", "a", "fool"}, "fool") => true
-func MatchAny[ItemT comparable](slice []ItemT, value ItemT) (ItemT, error) {
+func MatchAny[ItemT comparable](slice []ItemT, value ItemT) *ItemT {
 	return MatchAnyFunc(slice, func(it ItemT) bool { return it == value })
 }
 

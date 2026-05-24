@@ -238,6 +238,7 @@ func TestComplexRoutesWithParams(t *testing.T) {
 			}),
 		)
 		req := httptest.NewRequest(http.MethodPost, "/test/request?cabane=123", strings.NewReader(`{"dog": "suzie", "amount": 1}`))
+		req.Header.Set("content-type", "application/json")
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusCreated, rec.Code)

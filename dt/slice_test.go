@@ -1,7 +1,6 @@
 package dt
 
 import (
-	"errors"
 	"strconv"
 	"testing"
 
@@ -64,8 +63,8 @@ func TestAnyFunc_Found_FirstMatch(t *testing.T) {
 		{ID: 3, Name: "Cid"},
 	}
 
-	got, err := MatchAnyFunc(users, func(u user) bool { return u.ID == 2 })
-	assert.NoError(t, err)
+	got := MatchAnyFunc(users, func(u user) bool { return u.ID == 2 })
+	assert.NotNil(t, got)
 	assert.Equal(t, got.Name, "Bob")
 }
 
@@ -74,31 +73,22 @@ func TestAnyFunc_NotFound_ReturnsZeroAndError(t *testing.T) {
 	type rec struct{ X int }
 	recs := []rec{{1}, {2}, {3}}
 
-	got, err := MatchAnyFunc(recs, func(r rec) bool { return r.X == 42 })
-	assert.ErrorIs(t, err, ErrAnyCouldNotFind)
-	assert.Equal(t, got, (rec{}))
+	got := MatchAnyFunc(recs, func(r rec) bool { return r.X == 42 })
+	assert.Nil(t, got)
 }
 
 func TestAny_Found(t *testing.T) {
 	ints := []int{10, 20, 30}
-	got, err := MatchAny(ints, 20)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got != 20 {
+	got := MatchAny(ints, 20)
+	if *got != 20 {
 		t.Fatalf("expected 20, got %d", got)
 	}
 }
 
 func TestAny_NotFound(t *testing.T) {
 	ints := []int{1, 2, 3}
-	got, err := MatchAny(ints, 99)
-	if !errors.Is(err, ErrAnyCouldNotFind) {
-		t.Fatalf("expected ErrAnyCouldNotFind, got %v", err)
-	}
-	if got != 0 { // zero value for int
-		t.Fatalf("expected zero value 0, got %d", got)
-	}
+	got := MatchAny(ints, 99)
+	assert.Nil(t, got)
 }
 
 func TestAnyFunc_WithNonComparableElementType(t *testing.T) {
@@ -108,14 +98,12 @@ func TestAnyFunc_WithNonComparableElementType(t *testing.T) {
 		{"b": 2},
 		{"c": 3},
 	}
-	got, err := MatchAnyFunc(s, func(m map[string]int) bool {
+	got := MatchAnyFunc(s, func(m map[string]int) bool {
 		_, ok := m["b"]
 		return ok
 	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if _, ok := got["b"]; !ok {
+	assert.NotNil(t, got)
+	if _, ok := (*got)["b"]; !ok {
 		t.Fatalf("expected map containing key 'b', got %#v", got)
 	}
 }
