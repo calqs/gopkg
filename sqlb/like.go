@@ -35,6 +35,14 @@ func (l *LikeNode) ToSQL(depth int) (string, []any) {
 	return sb.String(), []any{l.value}
 }
 
+func (l *LikeNode) Clone() Node {
+	eqClone := l.EqNode.Clone().(*EqNode)
+	return &LikeNode{
+		EqNode:    *eqClone,
+		wildcards: l.wildcards,
+	}
+}
+
 func (wb *Builder) Like(column, value string, wildcards Wildcards) *Builder {
 	return wb.pushNode(&LikeNode{
 		EqNode: EqNode{

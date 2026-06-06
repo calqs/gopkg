@@ -27,6 +27,14 @@ func (jn *JoinNode) ToSQL(it int) (string, []any) {
 	return string(jn.joinType) + " " + jn.table + " ON " + sql, nil
 }
 
+func (jn *JoinNode) Clone() Node {
+	return &JoinNode{
+		table:    jn.table,
+		EqNode:   jn.EqNode.Clone().(*EqNode),
+		joinType: jn.joinType,
+	}
+}
+
 func join(table string, eq *EqNode, joinType JoinType) *JoinNode {
 	return &JoinNode{
 		table:    table,

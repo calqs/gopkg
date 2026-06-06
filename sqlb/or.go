@@ -8,6 +8,12 @@ func (o *OrNode) ToSQL(depth int) (string, []any) {
 	return string(OperationOr), []any{}
 }
 
+func (o *OrNode) Clone() Node {
+	return &OrNode{
+		NodeRoutine: *o.NodeRoutine.Clone(),
+	}
+}
+
 func Or() *OrNode {
 	return &OrNode{
 		NodeRoutine: NodeRoutine{

@@ -12,6 +12,15 @@ type EqNode struct {
 	NodeRoutine
 }
 
+func (eq *EqNode) Clone() Node {
+	return &EqNode{
+		column:      eq.column,
+		value:       eq.value,
+		comparison:  eq.comparison,
+		NodeRoutine: *eq.NodeRoutine.Clone(),
+	}
+}
+
 func (eq *EqNode) ToSQL(depth int) (string, []any) {
 	if v, ok := eq.value.(string); ok {
 		if strings.HasPrefix(v, `"`) && strings.HasSuffix(v, `"`) {

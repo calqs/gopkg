@@ -18,6 +18,14 @@ func (i *InNode) ToSQL(depth int) (string, []any) {
 	return fmt.Sprintf("%s %s (%s)", i.column, i.comparison, strings.Join(placeholders, ", ")), i.values
 }
 
+func (i *InNode) Clone() Node {
+	eqClone := i.EqNode.Clone().(*EqNode)
+	return &InNode{
+		EqNode: *eqClone,
+		values: append([]any{}, i.values...), // deep copy slices
+	}
+}
+
 func In(column string, values ...any) *InNode {
 	return &InNode{
 		EqNode: EqNode{

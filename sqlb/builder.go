@@ -3,6 +3,8 @@ package sqlb
 import (
 	"strconv"
 	"strings"
+
+	"github.com/calqs/gopkg/dt"
 )
 
 type Builder struct {
@@ -13,6 +15,35 @@ type Builder struct {
 	limit   *int
 	offset  *int
 	order   *Order
+}
+
+func (wb *Builder) Clone() *Builder {
+	var limit *int
+	if wb.limit != nil {
+		limit = dt.Ptr(*wb.limit)
+	}
+	var offset *int
+	if wb.offset != nil {
+		offset = dt.Ptr(*wb.offset)
+	}
+	var order *Order
+	if wb.order != nil {
+		order = &Order{
+			direction: wb.order.direction,
+		}
+		if wb.order.column != nil {
+			order.column = dt.Ptr(*wb.order.column)
+		}
+	}
+	return &Builder{
+		node:    cloneNodeChain(wb.node),
+		columns: append([]string{}, wb.columns...), // deep copy
+		from:    append([]string{}, wb.from...),    // deep copy
+		joins:   cloneNodeChain(wb.joins),
+		limit:   limit,
+		offset:  offset,
+		order:   order,
+	}
 }
 
 func (wb *Builder) pushJoin(node Node) *Builder {

@@ -12,6 +12,13 @@ type Token struct {
 	Type TokenType
 }
 
+func (t *Token) Clone() Node {
+	return &Token{
+		NodeRoutine: *t.NodeRoutine.Clone(),
+		Type:        t.Type,
+	}
+}
+
 func (t *Token) ToSQL(_ int) (string, []any) {
 	return string(t.Type), []any{}
 }

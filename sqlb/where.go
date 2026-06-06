@@ -4,13 +4,21 @@ type Node interface {
 	ToSQL(int) (string, []any)
 	Next() Node
 	Prev() Node
-	SetNext(node Node)
-	SetPrev(node Node)
+	SetNext(Node)
+	SetPrev(Node)
+	Clone() Node
 }
 
 type NodeRoutine struct {
 	NextNode Node
 	PrevNode Node
+}
+
+func (n *NodeRoutine) Clone() *NodeRoutine {
+	return &NodeRoutine{
+		NextNode: nil,
+		PrevNode: nil,
+	}
 }
 
 func (n *NodeRoutine) Next() Node {
@@ -108,4 +116,33 @@ func (s *Builder) Where(nodes ...Node) *Builder {
 	b.columns = s.columns
 	b.from = s.from
 	return b
+}
+
+func cloneNodeChain(handle Node) Node {
+	if handle == nil {
+		return nil
+	}
+	// wind back to head
+	curr := handle
+	for curr.Prev() != nil {
+		curr = curr.Prev()
+	}
+
+	var newHandle, prev Node
+	for curr != nil {
+		c := curr.Clone()
+		c.SetNext(nil)
+		c.SetPrev(nil)
+
+		if prev != nil {
+			prev.SetNext(c)
+			c.SetPrev(prev)
+		}
+		if curr == handle {
+			newHandle = c
+		}
+		prev = c
+		curr = curr.Next()
+	}
+	return newHandle
 }

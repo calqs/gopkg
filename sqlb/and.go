@@ -4,6 +4,12 @@ type AndNode struct {
 	NodeRoutine
 }
 
+func (a *AndNode) Clone() Node {
+	return &AndNode{
+		NodeRoutine: *a.NodeRoutine.Clone(),
+	}
+}
+
 func (a *AndNode) ToSQL(depth int) (string, []any) {
 	return string(OperationAnd), []any{}
 }

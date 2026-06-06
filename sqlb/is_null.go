@@ -11,6 +11,13 @@ func (n *IsNullNode) ToSQL(depth int) (string, []any) {
 	return fmt.Sprintf("%s IS NULL", n.column), []any{}
 }
 
+func (n *IsNullNode) Clone() Node {
+	return &IsNullNode{
+		column:      n.column,
+		NodeRoutine: *n.NodeRoutine.Clone(),
+	}
+}
+
 func IsNull(column string) *IsNullNode {
 	return &IsNullNode{
 		column: column,
@@ -24,6 +31,13 @@ func IsNull(column string) *IsNullNode {
 type NotNullNode struct {
 	column string
 	NodeRoutine
+}
+
+func (n *NotNullNode) Clone() Node {
+	return &NotNullNode{
+		column:      n.column,
+		NodeRoutine: *n.NodeRoutine.Clone(),
+	}
 }
 
 func (n *NotNullNode) ToSQL(depth int) (string, []any) {
