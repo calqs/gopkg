@@ -15,6 +15,7 @@ type Builder struct {
 	limit   *int
 	offset  *int
 	order   *Order
+	groupBy []string
 }
 
 func (wb *Builder) Clone() *Builder {
@@ -37,12 +38,13 @@ func (wb *Builder) Clone() *Builder {
 	}
 	return &Builder{
 		node:    cloneNodeChain(wb.node),
-		columns: append([]string{}, wb.columns...), // deep copy
-		from:    append([]string{}, wb.from...),    // deep copy
+		columns: append([]string{}, wb.columns...),
+		from:    append([]string{}, wb.from...),
 		joins:   cloneNodeChain(wb.joins),
 		limit:   limit,
 		offset:  offset,
 		order:   order,
+		groupBy: append([]string{}, wb.groupBy...),
 	}
 }
 
@@ -122,6 +124,11 @@ func (wb *Builder) buildWhere(b *strings.Builder) ([]any, error) {
 	return values, nil
 }
 
+func (wb *Builder) GroupBy(cols ...string) *Builder {
+	wb.groupBy = append(wb.groupBy, cols...)
+	return wb
+}
+
 func (wb *Builder) BuildSQL() (string, []any, error) {
 	var query strings.Builder
 	wb.buildSelect(&query)
@@ -129,6 +136,11 @@ func (wb *Builder) BuildSQL() (string, []any, error) {
 	values, err := wb.buildWhere(&query)
 	if err != nil {
 		return "", nil, err
+	}
+	if len(wb.groupBy) > 0 {
+		query.WriteString("GROUP BY ")
+		query.WriteString(strings.Join(wb.groupBy, ", "))
+		query.WriteRune(' ')
 	}
 	if wb.order != nil && wb.order.column != nil {
 		query.WriteString("ORDER BY ")
