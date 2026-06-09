@@ -36,3 +36,23 @@ func (n *NodeRoutine) SetNext(node Node) {
 func (n *NodeRoutine) SetPrev(node Node) {
 	n.PrevNode = node
 }
+
+func getHead(n Node) Node {
+	if n == nil {
+		return nil
+	}
+	for n.Prev() != nil {
+		n = n.Prev()
+	}
+	return n
+}
+
+func getTail(n Node) Node {
+	if n == nil {
+		return nil
+	}
+	for n.Next() != nil {
+		n = n.Next()
+	}
+	return n
+}

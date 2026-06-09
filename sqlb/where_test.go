@@ -41,9 +41,9 @@ func TestWhereBuilderChunkedUse(t *testing.T) {
 
 func TestOrBlock(t *testing.T) {
 	wb := Where().Eq("test", 2).Or().Eq("test2", 3)
-	wb.OrBlock(Eq("id", 1).And().IsNull("deleted_at"), And(), Eq("name", "test"))
+	wb.Or().OrBlock(Eq("id", 1).And().IsNull("deleted_at"), Eq("name", "test"))
 	query, values, err := wb.BuildSQL()
 	assert.Nil(t, err)
-	assert.Equal(t, "WHERE test = $1 OR test2 = $2 OR ( id = $3 AND deleted_at IS NULL AND name = $4 )", query)
+	assert.Equal(t, "WHERE test = $1 OR test2 = $2 OR ( id = $3 AND deleted_at IS NULL OR name = $4 )", query)
 	assert.Equal(t, []any{2, 3, 1, "test"}, values)
 }

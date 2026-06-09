@@ -23,25 +23,34 @@ func Or() *OrNode {
 	}
 }
 
-func OrBlock(node Node, rest ...Node) *OrNode {
-	chain := node
+func OrBlock(node Node, rest ...Node) *Token {
+	head := OpenParenthesis()
+	var tail Node = head
+
+	nHead := getHead(node)
+	nTail := getTail(node)
+	tail.SetNext(nHead)
+	nHead.SetPrev(tail)
+	tail = nTail
+
 	for _, r := range rest {
-		r.SetPrev(chain)
-		chain.SetNext(r)
-		chain = r
+		orNode := Or()
+		tail.SetNext(orNode)
+		orNode.SetPrev(tail)
+		tail = orNode
+
+		rHead := getHead(r)
+		rTail := getTail(r)
+		tail.SetNext(rHead)
+		rHead.SetPrev(tail)
+		tail = rTail
 	}
-	chain.SetNext(CloseParenthesis())
-	chain.Next().SetPrev(chain)
-	for chain.Prev() != nil {
-		chain = chain.Prev()
-	}
-	n := OpenParenthesis()
-	chain.SetPrev(n)
-	n.SetNext(chain)
-	or := Or()
-	or.SetNext(n)
-	or.NextNode.SetPrev(or)
-	return or
+
+	closeNode := CloseParenthesis()
+	tail.SetNext(closeNode)
+	closeNode.SetPrev(tail)
+
+	return head
 }
 
 func (eq *EqNode) Or() *OrNode {

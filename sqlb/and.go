@@ -23,25 +23,34 @@ func And() *AndNode {
 	}
 }
 
-func AndBlock(node Node, rest ...Node) *AndNode {
-	chain := node
+func AndBlock(node Node, rest ...Node) *Token {
+	head := OpenParenthesis()
+	var tail Node = head
+
+	nHead := getHead(node)
+	nTail := getTail(node)
+	tail.SetNext(nHead)
+	nHead.SetPrev(tail)
+	tail = nTail
+
 	for _, r := range rest {
-		r.SetPrev(chain)
-		chain.SetNext(r)
-		chain = r
+		andNode := And()
+		tail.SetNext(andNode)
+		andNode.SetPrev(tail)
+		tail = andNode
+
+		rHead := getHead(r)
+		rTail := getTail(r)
+		tail.SetNext(rHead)
+		rHead.SetPrev(tail)
+		tail = rTail
 	}
-	chain.SetNext(CloseParenthesis())
-	chain.Next().SetPrev(chain)
-	for chain.Prev() != nil {
-		chain = chain.Prev()
-	}
-	n := OpenParenthesis()
-	chain.SetPrev(n)
-	n.SetNext(chain)
-	and := And()
-	and.SetNext(n)
-	and.NextNode.SetPrev(and)
-	return and
+
+	closeNode := CloseParenthesis()
+	tail.SetNext(closeNode)
+	closeNode.SetPrev(tail)
+
+	return head
 }
 
 func (eq *EqNode) And() *AndNode {
