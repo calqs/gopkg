@@ -33,4 +33,9 @@ func TestVoid(t *testing.T) {
 	assert.Equal(t, AndBlock(Eq("id", 1)), v.AndBlock(Eq("id", 1)))
 	// OrBlock
 	assert.Equal(t, OrBlock(Eq("id", 1)), v.OrBlock(Eq("id", 1)))
+
+	t1 := Void()
+	sql, args := t1.Eq("a", 1).ToSQL(1)
+	assert.Equal(t, "a = $1", sql)
+	assert.Equal(t, []any{1}, args)
 }

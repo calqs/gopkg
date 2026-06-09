@@ -2,6 +2,7 @@ package sqlb
 
 type VoidNode struct {
 	NodeRoutine
+	node Node
 }
 
 func Void() *VoidNode {
@@ -17,6 +18,9 @@ func V() *VoidNode {
 }
 
 func (p *VoidNode) ToSQL(i int) (string, []any) {
+	if p.node != nil {
+		return p.node.ToSQL(i)
+	}
 	return "", nil
 }
 
@@ -25,49 +29,61 @@ func (p *VoidNode) Clone() Node {
 }
 
 func (p *VoidNode) Gte(column string, value any) *EqNode {
-	return Gte(column, value)
+	p.node = Gte(column, value)
+	return p.node.(*EqNode)
 }
 
 func (p *VoidNode) Gt(column string, value any) *EqNode {
-	return Gt(column, value)
+	p.node = Gt(column, value)
+	return p.node.(*EqNode)
 }
 
 func (p *VoidNode) Lt(column string, value any) *EqNode {
-	return Lt(column, value)
+	p.node = Lt(column, value)
+	return p.node.(*EqNode)
 }
 
 func (p *VoidNode) Lte(column string, value any) *EqNode {
-	return Lte(column, value)
+	p.node = Lte(column, value)
+	return p.node.(*EqNode)
 }
 
 func (p *VoidNode) Eq(column string, value any) *EqNode {
-	return Eq(column, value)
+	p.node = Eq(column, value)
+	return p.node.(*EqNode)
 }
 
 func (p *VoidNode) In(column string, values ...any) *InNode {
-	return In(column, values...)
+	p.node = In(column, values...)
+	return p.node.(*InNode)
 }
 
 func (p *VoidNode) IsNull(column string) *IsNullNode {
-	return IsNull(column)
+	p.node = IsNull(column)
+	return p.node.(*IsNullNode)
 }
 
 func (p *VoidNode) NotNull(column string) *NotNullNode {
-	return NotNull(column)
+	p.node = NotNull(column)
+	return p.node.(*NotNullNode)
 }
 
 func (p *VoidNode) And() *AndNode {
-	return And()
+	p.node = And()
+	return p.node.(*AndNode)
 }
 
 func (p *VoidNode) Or() *OrNode {
-	return Or()
+	p.node = Or()
+	return p.node.(*OrNode)
 }
 
 func (p *VoidNode) AndBlock(node Node, rest ...Node) *AndNode {
-	return AndBlock(node, rest...)
+	p.node = AndBlock(node, rest...)
+	return p.node.(*AndNode)
 }
 
 func (p *VoidNode) OrBlock(node Node, rest ...Node) *OrNode {
-	return OrBlock(node, rest...)
+	p.node = OrBlock(node, rest...)
+	return p.node.(*OrNode)
 }
