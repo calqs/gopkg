@@ -16,6 +16,14 @@ func V() *VoidNode {
 	return Void()
 }
 
+func (p *VoidNode) ToSQL(i int) (string, []any) {
+	return "", nil
+}
+
+func (p *VoidNode) Clone() Node {
+	return Void()
+}
+
 func (p *VoidNode) Gte(column string, value any) *EqNode {
 	return Gte(column, value)
 }
