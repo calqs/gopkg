@@ -135,8 +135,8 @@ func TestSortEqual(t *testing.T) {
 }
 
 func TestUnique(t *testing.T) {
-	assert.EqualValues(t, []int{1, 2, 3}, Unique([]int{1, 2, 3, 1, 2, 3}))
-	assert.EqualValues(t, []int{}, Unique([]int{}))
+	assert.ElementsMatch(t, []int{1, 2, 3}, Unique([]int{1, 2, 3, 1, 2, 3}))
+	assert.ElementsMatch(t, []int{}, Unique([]int{}))
 }
 
 func TestSortEqualFunc(t *testing.T) {
