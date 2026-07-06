@@ -74,5 +74,18 @@ func (a *APIMiddlewares) MakeChain(h http.Handler) http.Handler {
 }
 
 func (a *APIMiddlewares) Clone() *APIMiddlewares {
-	return &APIMiddlewares{a.middlewares, a.tail}
+	if a == nil {
+		return nil
+	}
+	var m []Middleware
+	if a.middlewares != nil {
+		m = make([]Middleware, len(a.middlewares))
+		copy(m, a.middlewares)
+	}
+	var t []Middleware
+	if a.tail != nil {
+		t = make([]Middleware, len(a.tail))
+		copy(t, a.tail)
+	}
+	return &APIMiddlewares{m, t}
 }
