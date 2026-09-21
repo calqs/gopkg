@@ -54,6 +54,49 @@ func Test_I_Can_Parse_Struct_And_Apply_Values(t *testing.T) {
 	})
 }
 
+func Test_I_Can_Parse_Struct_With_Byte_Arrays(t *testing.T) {
+	t.Run("with a valid hex-encoded env var", func(t *testing.T) {
+		os.Setenv("key32", "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20")
+		t.Cleanup(func() {
+			os.Unsetenv("key32")
+		})
+		type testStruct struct {
+			Key [32]byte `env:"key32"`
+		}
+		trial, err := DynamicParseStruct[testStruct]("env", func(tag string) string { return os.Getenv(tag) })
+		assert.NoError(t, err)
+		goal := testStruct{}
+		for i := range goal.Key {
+			goal.Key[i] = byte(i + 1)
+		}
+		assert.Equal(t, goal, trial)
+	})
+	t.Run("with a shorter env var than what is expected (leaves the array zeroed)", func(t *testing.T) {
+		os.Setenv("key32", "01020304")
+		t.Cleanup(func() {
+			os.Unsetenv("key32")
+		})
+		type testStruct struct {
+			Key [32]byte `env:"key32"`
+		}
+		trial, err := DynamicParseStruct[testStruct]("env", func(tag string) string { return os.Getenv(tag) })
+		assert.NoError(t, err)
+		assert.Equal(t, testStruct{}, trial)
+	})
+	t.Run("with a malformed env var, leaves the array zeroed", func(t *testing.T) {
+		os.Setenv("key32", "not-hex")
+		t.Cleanup(func() {
+			os.Unsetenv("key32")
+		})
+		type testStruct struct {
+			Key [32]byte `env:"key32"`
+		}
+		trial, err := DynamicParseStruct[testStruct]("env", func(tag string) string { return os.Getenv(tag) })
+		assert.NoError(t, err)
+		assert.Equal(t, testStruct{}, trial)
+	})
+}
+
 func Test_I_Can_Parse_Struct_With_Pointers(t *testing.T) {
 	t.Run("with a provided env var", func(t *testing.T) {
 		type testStruct struct {

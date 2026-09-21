@@ -1,6 +1,7 @@
 package dt
 
 import (
+	"encoding/hex"
 	"reflect"
 	"strconv"
 	"strings"
@@ -57,6 +58,14 @@ func assignValue(v reflect.Value, val string) {
 	case reflect.Bool:
 		if b, err := strconv.ParseBool(val); err == nil {
 			v.SetBool(b)
+		}
+	case reflect.Array:
+		// byte arrays (e.g. [32]byte) come from hex-encoded env values
+		if v.Type().Elem().Kind() != reflect.Uint8 {
+			return
+		}
+		if decoded, err := hex.DecodeString(val); err == nil && len(decoded) == v.Len() {
+			reflect.Copy(v, reflect.ValueOf(decoded))
 		}
 		// @TODO: Add Float, etc.
 	}
