@@ -5,5 +5,7 @@
 - [router: multiplexer/handler with middleware, with an opinion about
   json/gRPC](./router/README.md)
 - [gormslog: use of the slog pkg as gorm logger](./gormslog/README.md)
+- [runkey: short-lived in-memory bearer keys, for an agent calling an API back as
+  a user](./runkey/README.md)
 
 [![Go](https://github.com/calqs/gopkg/actions/workflows/go.yml/badge.svg)](https://github.com/calqs/gopkg/actions/workflows/go.yml)
