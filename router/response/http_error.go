@@ -3,7 +3,6 @@ package response
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 )
 
@@ -24,7 +23,6 @@ func (e *HTTPError) Error() string {
 
 func (e *HTTPError) Send(w http.ResponseWriter) {
 	e.WriteHeaders(w)
-	slog.Error("API error", "error", e.Error(), "code", e.Code, "message", e.Message)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(e.Code)
 	fmt.Fprintf(w, `{"code": %d, "message": "%s"}`, e.Code, e.Message)

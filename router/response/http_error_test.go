@@ -4,10 +4,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+// captureDefaultLog redirects the default slog logger to a buffer for the test's duration.
+func captureDefaultLog(t *testing.T) *bytes.Buffer {
+	t.Helper()
+	buf := &bytes.Buffer{}
+	previous := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(buf, nil)))
+	t.Cleanup(func() { slog.SetDefault(previous) })
+	return buf
+}
 
 func TestHTTPError_Error(t *testing.T) {
 	err := errors.New("something went wrong")
@@ -43,6 +54,17 @@ func TestHTTPError_Send(t *testing.T) {
 	}
 	if resp["message"] != "bad input" {
 		t.Errorf("message = %q, want %q", resp["message"], "bad input")
+	}
+}
+
+// The caller's access log reports failed requests: Send must not log on its own.
+func TestHTTPError_Send_DoesNotLog(t *testing.T) {
+	logs := captureDefaultLog(t)
+
+	InternalServerError("boom", errors.New("db down")).Send(httptest.NewRecorder())
+
+	if logs.Len() != 0 {
+		t.Errorf("Send logged %q, want nothing", logs.String())
 	}
 }
 
