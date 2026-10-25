@@ -3,6 +3,7 @@ package request
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -38,4 +39,36 @@ func TestICanExtractQueryStringFromRequest(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), res.CreatedAt)
 	})
+}
+
+type kindBody struct {
+	Kind string `json:"kind"`
+}
+
+func TestICanExtractJSONBodyWhateverTheContentTypeSpelling(t *testing.T) {
+	for _, contentType := range []string{
+		"application/json",
+		"application/json; charset=utf-8",
+		"Application/JSON",
+	} {
+		t.Run(contentType, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"kind":"ticket"}`))
+			req.Header.Set("Content-Type", contentType)
+			res, err := ExtractData[kindBody](req)
+			assert.NoError(t, err)
+			assert.Equal(t, "ticket", res.Kind)
+		})
+	}
+}
+
+func TestIIgnoreTheBodyWhenItIsNotJSON(t *testing.T) {
+	for _, contentType := range []string{"", "text/plain", "application/jsonx"} {
+		t.Run(contentType, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"kind":"ticket"}`))
+			req.Header.Set("Content-Type", contentType)
+			res, err := ExtractData[kindBody](req)
+			assert.NoError(t, err)
+			assert.Equal(t, "", res.Kind)
+		})
+	}
 }
